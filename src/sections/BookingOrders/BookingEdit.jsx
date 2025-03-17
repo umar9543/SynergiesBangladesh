@@ -277,80 +277,121 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
    
    
        useEffect(() => {
-           Get("https://localhost:44347/api/Supplier")
-               .then(response => {
-                   const decryptedData = decryptObjectKeys(response.data);
-                   setSupplierData(decryptedData)
-               }
-               )
-               .catch(error => console.error("Error fetching customers:", error));
-       }, []);
-   
+        Get("https://localhost:44347/api/Supplier")
+            .then(response => {
+                const decryptedData = decryptObjectKeys(response.data);
+    
+                // ✅ Convert supplierID to number
+                const formattedData = decryptedData.map(item => ({
+                    venderLibraryID: Number(item.venderLibraryID), // Convert to number
+                    venderName: item.venderName,
+                }));
+    
+                setSupplierData(formattedData);
+            })
+            .catch(error => console.error("Error fetching suppliers:", error));
+    }, []);
+
        // Fetch customer brand data based on selected customer
        useEffect(() => {
-           if (values?.customer?.customerID) {
-               setValue('brandCustomer', null)
-               Get(`https://localhost:44347/api/customerbrand/${values?.customer?.customerID}`)
-                   .then(response => {
-                       const decryptedData = decryptObjectKeys(response.data);
-                        setBrandData(decryptedData)
-                   }
-                   )
-                   .catch(error => console.error("Error fetching customer brands:", error));
-           } else {
-               setBrandData([]); // Reset brand data when no customer is selected
-           }
-       }, [values?.customer?.customerID, setValue]);
-   
-   
-       useEffect(() => {
-           Get(`https://localhost:44347/api/Merchants?userID=${userData.userID}&roleID=${userData.roleID}`)
-               .then(response =>{
+        if (values?.customer?.customerID) {
+            setValue('brandCustomer', null);
+            
+            Get(`https://localhost:44347/api/customerbrand/${values?.customer?.customerID}`)
+                .then(response => {
                     const decryptedData = decryptObjectKeys(response.data);
-                        setMerchantData(decryptedData)
-               })
-               .catch(error => console.error("Error fetching customers:", error));
-       }, [userData.userID, userData.roleID]);
+    
+                    // ✅ Convert brandID to number
+                    const formattedData = decryptedData.map(item => ({
+                        brandID: Number(item.brandID), // Convert to number
+                        brandName: item.brandName,
+                    }));
+    
+                    setBrandData(formattedData);
+                })
+                .catch(error => console.error("Error fetching customer brands:", error));
+        } else {
+            setBrandData([]); // Reset brand data when no customer is selected
+        }
+    }, [values?.customer?.customerID, setValue]);
    
    
-       useEffect(() => {
-           Get("https://localhost:44347/api/ProductPortfolio")
-               .then(response =>{
+    useEffect(() => {
+        Get(`https://localhost:44347/api/Merchants?userID=${userData.userID}&roleID=${userData.roleID}`)
+            .then(response => {
+                const decryptedData = decryptObjectKeys(response.data);
+    
+                // ✅ Ensure merchantID is a number
+                const formattedData = decryptedData.map(item => ({
+                    userID: Number(item.userID),
+                    userName: item.userName,
+                }));
+    
+                setMerchantData(formattedData);
+            })
+            .catch(error => console.error("Error fetching merchants:", error));
+    }, [userData.userID, userData.roleID]);
+    console.log(MerchantData);
+    
+    useEffect(() => {
+        Get("https://localhost:44347/api/ProductPortfolio")
+            .then(response => {
+                const decryptedData = decryptObjectKeys(response.data);
+    
+                // ✅ Ensure productID is a number
+                const formattedData = decryptedData.map(item => ({
+                    productPortfolioID: Number(item.productPortfolioID), // Convert to number
+                    productPortfolioName: item.productPortfolioName,
+                }));
+    
+                setproductPortfolioData(formattedData);
+            })
+            .catch(error => console.error("Error fetching product portfolio:", error));
+    }, []);
+  
+    useEffect(() => {
+        if (values?.productPortfolio?.productPortfolioID) {
+            Get(`https://localhost:44347/api/productcategory/${values.productPortfolio.productPortfolioID}`)
+                .then(response => {
                     const decryptedData = decryptObjectKeys(response.data);
-                        setproductPortfolioData(decryptedData)
-               })
-               .catch(error => console.error("Error fetching customers:", error));
-       }, []);
-   
-       useEffect(() => {
-           if (values?.productPortfolio?.productPortfolioID) {
-               Get(`https://localhost:44347/api/productcategory/${values?.productPortfolio?.productPortfolioID}`)
-                   .then(response => {
+    
+                    // ✅ Convert productCategoriesID to number
+                    const formattedData = decryptedData.map(item => ({
+                        productCategoriesID: Number(item.productCategoriesID), // Convert to number
+                        productCategory: item.productCategory,
+                    }));
+    
+                    setproductCategoryData(formattedData);
+                })
+                .catch(error => console.error("Error fetching product categories:", error));
+        } else {
+            setproductCategoryData([]); // Reset category data when no product portfolio is selected
+        }
+    }, [values?.productPortfolio?.productPortfolioID]);
+    
+    useEffect(() => {
+        if (values?.productCategory?.productCategoriesID) {
+            Get(`https://localhost:44347/api/productgroup/${values.productCategory.productCategoriesID}`)
+                .then(response => {
                     const decryptedData = decryptObjectKeys(response.data);
-                        setproductCategoryData(decryptedData)
-               })
-                   .catch(error => console.error("Error fetching customer brands:", error));
-           } else {
-               setproductCategoryData([]); // Reset brand data when no customer is selected
-           }
-       }, [values?.productPortfolio?.productPortfolioID]);
-   
-   
-       useEffect(() => {
-           if (values?.productCategory?.productCategoriesID) {
-               Get(`https://localhost:44347/api/productgroup/${values?.productCategory?.productCategoriesID}`)
-                   .then(response =>{
-                       const decryptedData = decryptObjectKeys(response.data);
-                           setproductGroupData(decryptedData)
-                  })
-                   .catch(error => console.error("Error fetching customer brands:", error));
-           } else {
-               setproductGroupData([]); // Reset brand data when no customer is selected
-           }
-       }, [values?.productCategory?.productCategoriesID]);
+    
+                    // ✅ Convert productGroupID to number
+                    const formattedData = decryptedData.map(item => ({
+                        productGroupID: Number(item.productGroupID), // Convert to number
+                        groupName: item.groupName,
+                    }));
+    
+                    setproductGroupData(formattedData);
+                })
+                .catch(error => console.error("Error fetching product groups:", error));
+        } else {
+            setproductGroupData([]); // Reset product group data when no category is selected
+        }
+    }, [values?.productCategory?.productCategoriesID]);
+    
    
        useEffect(() => {
-           console.log('hello from ')
+          
            Get(`https://localhost:44347/api/businessmanagers?ecpDivision=${userData.ecpDivistion}`)
                .then(response => {
                    
@@ -359,23 +400,37 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
                .catch(error => console.error("Error fetching customers:", error));
        }, [userData.ecpDivistion]);
        useEffect(() => {
-           Get("https://localhost:44347/api/shipmentmode")
-               .then(response => {
-                   const decryptedData = decryptObjectKeys(response.data);
-                       setShipmentModes(decryptedData)
-              })
-               .catch(error => console.error("Error fetching shipment modes:", error));
-       }, []);
-   
-       useEffect(() => {
-           Get("https://localhost:44347/api/paymentmode")
-               .then(response => {
-                   const decryptedData = decryptObjectKeys(response.data);
-                       setPaymentModes(decryptedData)
-              })
-               .catch(error => console.error("Error fetching payment modes:", error));
-       }, []);
-   
+        Get("https://localhost:44347/api/shipmentmode")
+            .then(response => {
+                const decryptedData = decryptObjectKeys(response.data);
+    
+                // ✅ Ensure shipmentModeID is a number
+                const formattedData = decryptedData.map(item => ({
+                    id: Number(item.id), // Convert to number
+                    name: item.name,
+                }));
+    
+                setShipmentModes(formattedData);
+            })
+            .catch(error => console.error("Error fetching shipment modes:", error));
+    }, []);
+    
+    useEffect(() => {
+        Get("https://localhost:44347/api/paymentmode")
+            .then(response => {
+                const decryptedData = decryptObjectKeys(response.data);
+    
+                // ✅ Ensure paymentModeID is a number
+                const formattedData = decryptedData.map(item => ({
+                    id: Number(item.id), // Convert to number
+                    name: item.name,
+                }));
+    
+                setPaymentModes(formattedData);
+            })
+            .catch(error => console.error("Error fetching payment modes:", error));
+    }, []);
+    
        useEffect(() => {
            Get("https://localhost:44347/api/currency")
                .then(response =>{
