@@ -379,13 +379,13 @@ const BookingOrder = () => {
    
 
     useEffect(() => {
-       Get("/api/pono") // Use the correct API that fetches only PONO
-            .then(response => {
-                setExistingRefNOs(response.data)})
+       Get("https://localhost:44347/api/pono") // Use the correct API that fetches only PONO
+            .then(response => 
+                setExistingRefNOs(response.data))
                
             .catch(error => console.error("Error fetching PONO values", error));
     }, []);
-    
+    console.log(existingRefNOs)
     const [selectedRows, setSelectedRows] = useState([]);
 
     const InsertMstData = async (DataToInsert) => {
