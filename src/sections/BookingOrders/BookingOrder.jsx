@@ -24,6 +24,7 @@ import { Get, Post } from "src/api/apibasemethods";
 import FormProvider, {
     RHFSwitch,
     RHFTextField,
+    RHFUpload,
     RHFUploadAvatar,
     RHFAutocomplete,
 } from 'src/components/hook-form';
@@ -76,15 +77,15 @@ const BookingOrder = () => {
     const userdata = JSON.parse(localStorage.getItem("UserData"))
 
     const validationSchema = Yup.object().shape({
-       
+
         RefNO: Yup.string()
-        .required("Reference No is required")
-        .test("unique-refno", "Reference No already exists", (value) => {
-            if (!value) return true;
-            return !existingRefNOs.includes(value);
-        }),
-    
-    
+            .required("Reference No is required")
+            .test("unique-refno", "Reference No already exists", (value) => {
+                if (!value) return true;
+                return !existingRefNOs.includes(value);
+            }),
+
+
         placementDates: Yup.date().required("placementDate is required"),
         shipmentDateBuyer: Yup.date()
             .required("Shipment Date (Buyer) is required")
@@ -117,10 +118,9 @@ const BookingOrder = () => {
         vendorCommissions: Yup.number(),
         totalMarkups: Yup.number(),
         comments: Yup.string().nullable(),
-        files: Yup.array().of(
-            Yup.mixed().test("fileType", "Only PDF files are allowed", file => file?.type === "application/pdf")
-        )
-            .nullable(),
+        files:  Yup.mixed().nullable().required("File is required"),
+      
+
     });
 
 
@@ -215,10 +215,15 @@ const BookingOrder = () => {
                 preview: URL.createObjectURL(file),
             })
         );
-    
+
         setFiles((prevFiles) => [...prevFiles, ...newFiles]);
-    }, []);
-    
+
+        if (files) {
+            setValue('files', newFiles, { shouldValidate: true });
+          }
+        
+    }, [setValue,files]);
+
     const handleFileChange = (event) => {
         const selectedFiles = Array.from(event.target.files);
 
@@ -235,34 +240,34 @@ const BookingOrder = () => {
     const handleDeleteFile = useCallback((index) => {
         setFiles((prevFiles) => {
             console.log("Before Deletion:", prevFiles);
-    
-           
+
+
             const updatedFiles = [...prevFiles];
             updatedFiles.splice(index, 1); // Remove file at index
-    
+
             console.log("After Deletion:", updatedFiles);
             return updatedFiles;
         });
     }, []);
-    
-    
+
+
 
     useEffect(() => {
         Get("https://localhost:44347/api/customer")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
-    
+
                 // ✅ Convert decrypted customerID to number
                 const formattedData = decryptedData.map(item => ({
                     customerID: Number(item.customerID), // Convert to number
                     customerName: item.customerName,
                 }));
-    
+
                 setCustomerData(formattedData);
             })
             .catch(error => console.error("Error fetching customers:", error));
     }, []);
-    
+
 
 
     useEffect(() => {
@@ -282,7 +287,7 @@ const BookingOrder = () => {
             Get(`https://localhost:44347/api/customerbrand/${values?.customer?.customerID}`)
                 .then(response => {
                     const decryptedData = decryptObjectKeys(response.data);
-                     setBrandData(decryptedData)
+                    setBrandData(decryptedData)
                 }
                 )
                 .catch(error => console.error("Error fetching customer brands:", error));
@@ -294,9 +299,9 @@ const BookingOrder = () => {
 
     useEffect(() => {
         Get(`https://localhost:44347/api/Merchants?userID=${userData.userID}&roleID=${userData.roleID}`)
-            .then(response =>{
-                 const decryptedData = decryptObjectKeys(response.data);
-                     setMerchantData(decryptedData)
+            .then(response => {
+                const decryptedData = decryptObjectKeys(response.data);
+                setMerchantData(decryptedData)
             })
             .catch(error => console.error("Error fetching customers:", error));
     }, [userData.userID, userData.roleID]);
@@ -304,9 +309,9 @@ const BookingOrder = () => {
 
     useEffect(() => {
         Get("https://localhost:44347/api/ProductPortfolio")
-            .then(response =>{
-                 const decryptedData = decryptObjectKeys(response.data);
-                     setproductPortfolioData(decryptedData)
+            .then(response => {
+                const decryptedData = decryptObjectKeys(response.data);
+                setproductPortfolioData(decryptedData)
             })
             .catch(error => console.error("Error fetching customers:", error));
     }, []);
@@ -315,9 +320,9 @@ const BookingOrder = () => {
         if (values?.productPortfolio?.productPortfolioID) {
             Get(`https://localhost:44347/api/productcategory/${values?.productPortfolio?.productPortfolioID}`)
                 .then(response => {
-                 const decryptedData = decryptObjectKeys(response.data);
-                     setproductCategoryData(decryptedData)
-            })
+                    const decryptedData = decryptObjectKeys(response.data);
+                    setproductCategoryData(decryptedData)
+                })
                 .catch(error => console.error("Error fetching customer brands:", error));
         } else {
             setproductCategoryData([]); // Reset brand data when no customer is selected
@@ -328,10 +333,10 @@ const BookingOrder = () => {
     useEffect(() => {
         if (values?.productCategory?.productCategoriesID) {
             Get(`https://localhost:44347/api/productgroup/${values?.productCategory?.productCategoriesID}`)
-                .then(response =>{
+                .then(response => {
                     const decryptedData = decryptObjectKeys(response.data);
-                        setproductGroupData(decryptedData)
-               })
+                    setproductGroupData(decryptedData)
+                })
                 .catch(error => console.error("Error fetching customer brands:", error));
         } else {
             setproductGroupData([]); // Reset brand data when no customer is selected
@@ -342,17 +347,17 @@ const BookingOrder = () => {
         console.log('hello from ')
         Get(`https://localhost:44347/api/businessmanagers?ecpDivision=${userData.ecpDivistion}`)
             .then(response => {
-                
-                    setBusinsessManager(response.data)
-           })
+
+                setBusinsessManager(response.data)
+            })
             .catch(error => console.error("Error fetching customers:", error));
     }, [userData.ecpDivistion]);
     useEffect(() => {
         Get("https://localhost:44347/api/shipmentmode")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
-                    setShipmentModes(decryptedData)
-           })
+                setShipmentModes(decryptedData)
+            })
             .catch(error => console.error("Error fetching shipment modes:", error));
     }, []);
 
@@ -360,32 +365,36 @@ const BookingOrder = () => {
         Get("https://localhost:44347/api/paymentmode")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
-                    setPaymentModes(decryptedData)
-           })
+                setPaymentModes(decryptedData)
+            })
             .catch(error => console.error("Error fetching payment modes:", error));
     }, []);
 
     useEffect(() => {
         Get("https://localhost:44347/api/currency")
-            .then(response =>{
+            .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
-                    setCurrencies(decryptedData)
-           })
+                setCurrencies(decryptedData)
+            })
             .catch(error => console.error("Error fetching currency:", error));
     }, []);
 
     const [existingRefNOs, setExistingRefNOs] = useState([]);
 
-   
+
 
     useEffect(() => {
-       Get("https://localhost:44347/api/pono") // Use the correct API that fetches only PONO
-            .then(response => 
+        Get("https://localhost:44347/api/pono") // Use the correct API that fetches only PONO
+            .then(response =>
                 setExistingRefNOs(response.data))
-               
+
             .catch(error => console.error("Error fetching PONO values", error));
     }, []);
-    console.log(existingRefNOs)
+
+
+    function toUTCISOString(date) {
+        return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())).toISOString();
+    }
     const [selectedRows, setSelectedRows] = useState([]);
 
     const InsertMstData = async (DataToInsert) => {
@@ -397,14 +406,14 @@ const BookingOrder = () => {
                 formData.append(key, DataToInsert[key]);
             }
         });
-    
+
         // ✅ Append files under correct key "File"
         if (files?.length > 0) {
             formData.append("File", files[0]); // ✅ Backend expects `dto.File`
         }
-    
-       
-       
+
+
+
         try {
 
             const res = await Post(`api/BookingPurchase/create`, formData, {
@@ -468,9 +477,9 @@ const BookingOrder = () => {
             console.log("Files to Upload:", files);
             const mstData = {
                 PONO: data.RefNO,
-                PlacementDate: new Date(data.placementDates).toISOString(),
-                ShipmentDate: new Date(data.shipmentDateBuyer).toISOString(),
-                Tolerance: new Date(data.shipmentDateVendor).toISOString(),
+                PlacementDate: toUTCISOString(new Date(data.placementDates)),
+                ShipmentDate: toUTCISOString(new Date(data.shipmentDateBuyer)),
+                Tolerance: toUTCISOString(new Date(data.shipmentDateVendor)),
                 CustomerID: data.customer?.customerID,
                 CusBrandID: data.brandCustomer?.brandID,
                 SupplierID: data.supplier?.venderLibraryID,
@@ -507,7 +516,7 @@ const BookingOrder = () => {
             console.log('mstData', mstData);
 
             // ✅ First, call Master API to get POID
-            const poid = await InsertMstData(mstData,files);
+            const poid = await InsertMstData(mstData, files);
 
             if (!poid) {
                 enqueueSnackbar("Something went wrong", { variant: "error" });
@@ -954,8 +963,8 @@ const BookingOrder = () => {
                     {/* Comment Field */}
                     <RHFTextField name="comments" label="Add a comment" fullWidth variant="outlined" multiline sx={{ mb: 2 }} rows={3} />
 
-                    <Upload
-
+                    <RHFUpload
+                        name="files"
                         files={files}
                         accept={{ 'application/pdf': ['.pdf'] }}
                         onDrop={handleDrop}
@@ -963,6 +972,7 @@ const BookingOrder = () => {
                         sx={{ mt: 2 }}
                         multiple
                     />
+
 
                 </Card>
                 <Button
