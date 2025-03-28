@@ -259,7 +259,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
    
    
        useEffect(() => {
-           Get("https://localhost:44347/api/customer")
+           Get("https://ssblapi.m5groupe.online:6449/api/customer")
                .then(response => {
                    const decryptedData = decryptObjectKeys(response.data);
        
@@ -277,7 +277,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
    
    
        useEffect(() => {
-        Get("https://localhost:44347/api/Supplier")
+        Get("https://ssblapi.m5groupe.online:6449/api/Supplier")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
     
@@ -297,7 +297,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
         if (values?.customer?.customerID) {
             setValue('brandCustomer', null);
             
-            Get(`https://localhost:44347/api/customerbrand/${values?.customer?.customerID}`)
+            Get(`https://ssblapi.m5groupe.online:6449/api/customerbrand/${values?.customer?.customerID}`)
                 .then(response => {
                     const decryptedData = decryptObjectKeys(response.data);
     
@@ -317,7 +317,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
    
    
     useEffect(() => {
-        Get(`https://localhost:44347/api/Merchants?userID=${userData.userID}&roleID=${userData.roleID}`)
+        Get(`https://ssblapi.m5groupe.online:6449/api/Merchants?userID=${userData.userID}&roleID=${userData.roleID}`)
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
     
@@ -334,7 +334,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
     console.log(MerchantData);
     
     useEffect(() => {
-        Get("https://localhost:44347/api/ProductPortfolio")
+        Get("https://ssblapi.m5groupe.online:6449/api/ProductPortfolio")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
     
@@ -351,7 +351,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
   
     useEffect(() => {
         if (values?.productPortfolio?.productPortfolioID) {
-            Get(`https://localhost:44347/api/productcategory/${values.productPortfolio.productPortfolioID}`)
+            Get(`https://ssblapi.m5groupe.online:6449/api/productcategory/${values.productPortfolio.productPortfolioID}`)
                 .then(response => {
                     const decryptedData = decryptObjectKeys(response.data);
     
@@ -371,7 +371,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
     
     useEffect(() => {
         if (values?.productCategory?.productCategoriesID) {
-            Get(`https://localhost:44347/api/productgroup/${values.productCategory.productCategoriesID}`)
+            Get(`https://ssblapi.m5groupe.online:6449/api/productgroup/${values.productCategory.productCategoriesID}`)
                 .then(response => {
                     const decryptedData = decryptObjectKeys(response.data);
     
@@ -392,7 +392,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
    
        useEffect(() => {
           
-           Get(`https://localhost:44347/api/businessmanagers?ecpDivision=${userData.ecpDivistion}`)
+           Get(`https://ssblapi.m5groupe.online:6449/api/businessmanagers?ecpDivision=${userData.ecpDivistion}`)
                .then(response => {
                    
                        setBusinsessManager(response.data)
@@ -400,7 +400,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
                .catch(error => console.error("Error fetching customers:", error));
        }, [userData.ecpDivistion]);
        useEffect(() => {
-        Get("https://localhost:44347/api/shipmentmode")
+        Get("https://ssblapi.m5groupe.online:6449/api/shipmentmode")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
     
@@ -416,7 +416,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
     }, []);
     
     useEffect(() => {
-        Get("https://localhost:44347/api/paymentmode")
+        Get("https://ssblapi.m5groupe.online:6449/api/paymentmode")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
     
@@ -432,7 +432,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
     }, []);
     
        useEffect(() => {
-           Get("https://localhost:44347/api/currency")
+           Get("https://ssblapi.m5groupe.online:6449/api/currency")
                .then(response =>{
                    const decryptedData = decryptObjectKeys(response.data);
                        setCurrencies(decryptedData)
@@ -593,7 +593,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
 
             if (selectedBooking) {
                 // ✅ Send JSON for UPDATE API (PUT)
-                res = await axios.put(`https://localhost:44347/api/BookingPurchase/${urlData?.id}`, formData, {
+                res = await axios.put(`https://ssblapi.m5groupe.online:6449/api/BookingPurchase/${urlData?.id}`, formData, {
                     headers: { "Content-Type": "multipart/form-data" }, // Ensure JSON format
                 });
 
@@ -603,7 +603,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
             else {
                 
 
-                res = await axios.post(`https://localhost:44347/api/BookingPurchase/create`, formData, {
+                res = await axios.post(`https://ssblapi.m5groupe.online:6449/api/BookingPurchase/create`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
 

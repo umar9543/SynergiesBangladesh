@@ -93,7 +93,7 @@ export default function BookingListView() {
 
   const FetchBookingData = useCallback(async () => {
     try {
-      const response = await Get(`https://localhost:44347/api/BookingPurchase/api/booking?userId=${userData.userID}&division=${userData.ecpDivistion}`);
+      const response = await Get(`https://ssblapi.m5groupe.online:6449/api/BookingPurchase/api/booking?userId=${userData.userID}&division=${userData.ecpDivistion}`);
       // const keysToExclude = ['EmployeeImage'];
       // const decryptedData = decryptObjectKeys(response.data.ServiceRes, keysToExclude);
       setTableData(response.data);

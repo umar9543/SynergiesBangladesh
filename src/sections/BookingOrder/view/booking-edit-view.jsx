@@ -19,7 +19,7 @@ export default function BookingEditView({ urlData }) {
     const [styles, setStyles] = useState([])
 
     useEffect(() => {
-        axios.get(`https://localhost:44347/api/BookingPurchase/${urlData?.id}`)
+        axios.get(`https://ssblapi.m5groupe.online:6449/api/BookingPurchase/${urlData?.id}`)
             .then(response => {
                 const formatedData = {
                     ...response.data,
@@ -34,7 +34,7 @@ export default function BookingEditView({ urlData }) {
     }, [urlData?.id]);
 
     useEffect(()=>{
-        axios.get(`https://localhost:44347/api/BookingPurchase/get-details/${urlData?.id}`)
+        axios.get(`https://ssblapi.m5groupe.online:6449/api/BookingPurchase/get-details/${urlData?.id}`)
         .then(response => {
             const updated = response.data.map(item => ({
                 ...item,

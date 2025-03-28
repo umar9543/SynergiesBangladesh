@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 
 import Scrollbar from "src/components/scrollbar";
+import { Get } from "src/api/apibasemethods";
 // import BookingOrder from "./BookingOrder";
 
 const BookingView = () => {
@@ -27,14 +28,13 @@ const BookingView = () => {
     const [showForm, setShowForm] = useState(false);
 
     useEffect(() => {
-        axios
-            .get(`https://localhost:44347/api/BookingPurchase/api/booking?userId=${userData.userID}&division=${userData.ecpDivistion}`)
+        axios.get(`https://ssblapi.m5groupe.online:6449/api/BookingPurchase/api/booking?userId=${userData.userID}&division=${userData.ecpDivistion}`)
             .then((response) => {
                 setData(response.data);
             })
             .catch((error) => console.error("Error fetching data:", error));
     }, [userData.userID, userData.ecpDivistion]);
-
+console.log("view",data)
     const handleSelectRow = (row) => {
         setSelectedRows((prevSelected) =>
             prevSelected.some((selected) => selected.POID === row.POID)
@@ -46,7 +46,7 @@ const BookingView = () => {
 
     // const handleEdit = async (id) => {
     //     try {
-    //         const response = await fetch(`https://localhost:44347/api/BookingPurchase/${id}`);
+    //         const response = await fetch(`https://ssblapi.m5groupe.online:6449/api/BookingPurchase/${id}`);
     //         const bookingData = await response.json();
 
     //         if (response.ok) {

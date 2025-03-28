@@ -89,11 +89,11 @@ const ProductSpecificInfo = ({ setTotalAmount, totalAmount, totalQuantity, setTo
             let apiUrl;
 
             if (styleNo?.trim()) {
-                apiUrl = `https://localhost:44347/api/Booking_Style/${styleNo}`;
+                apiUrl = `https://ssblapi.m5groupe.online:6449/api/Booking_Style/${styleNo}`;
 
             }
             else {
-                apiUrl = "https://localhost:44347/api/Booking_Style";
+                apiUrl = "https://ssblapi.m5groupe.online:6449/api/Booking_Style";
 
             }
 
@@ -142,7 +142,7 @@ const ProductSpecificInfo = ({ setTotalAmount, totalAmount, totalQuantity, setTo
         console.log("Sending Data:", newStyle); // ✅ Log newStyle before sending
 
         try {
-            const response = await fetch("https://localhost:44347/api/Booking_Style/create", {
+            const response = await fetch("https://ssblapi.m5groupe.online:6449/api/Booking_Style/create", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(newStyle),
@@ -181,7 +181,7 @@ const ProductSpecificInfo = ({ setTotalAmount, totalAmount, totalQuantity, setTo
     // Paginate Data
     const paginatedData = dataList.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
     useEffect(() => {
-        axios.get("https://localhost:44347/api/SizeRange")
+        axios.get("https://ssblapi.m5groupe.online:6449/api/SizeRange")
             .then(response =>{
                 const decryptedData = decryptObjectKeys(response.data);
                    setSizeRangeData(decryptedData)

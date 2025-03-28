@@ -253,7 +253,7 @@ const BookingOrder = () => {
 
 
     useEffect(() => {
-        Get("https://localhost:44347/api/customer")
+        Get("https://ssblapi.m5groupe.online:6449/api/customer")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
 
@@ -271,7 +271,7 @@ const BookingOrder = () => {
 
 
     useEffect(() => {
-        Get("https://localhost:44347/api/Supplier")
+        Get("https://ssblapi.m5groupe.online:6449/api/Supplier")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
                 setSupplierData(decryptedData)
@@ -284,7 +284,7 @@ const BookingOrder = () => {
     useEffect(() => {
         if (values?.customer?.customerID) {
             setValue('brandCustomer', null)
-            Get(`https://localhost:44347/api/customerbrand/${values?.customer?.customerID}`)
+            Get(`https://ssblapi.m5groupe.online:6449/api/customerbrand/${values?.customer?.customerID}`)
                 .then(response => {
                     const decryptedData = decryptObjectKeys(response.data);
                     setBrandData(decryptedData)
@@ -298,7 +298,7 @@ const BookingOrder = () => {
 
 
     useEffect(() => {
-        Get(`https://localhost:44347/api/Merchants?userID=${userData.userID}&roleID=${userData.roleID}`)
+        Get(`https://ssblapi.m5groupe.online:6449/api/Merchants?userID=${userData.userID}&roleID=${userData.roleID}`)
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
                 setMerchantData(decryptedData)
@@ -308,7 +308,7 @@ const BookingOrder = () => {
 
 
     useEffect(() => {
-        Get("https://localhost:44347/api/ProductPortfolio")
+        Get("https://ssblapi.m5groupe.online:6449/api/ProductPortfolio")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
                 setproductPortfolioData(decryptedData)
@@ -318,7 +318,7 @@ const BookingOrder = () => {
 
     useEffect(() => {
         if (values?.productPortfolio?.productPortfolioID) {
-            Get(`https://localhost:44347/api/productcategory/${values?.productPortfolio?.productPortfolioID}`)
+            Get(`https://ssblapi.m5groupe.online:6449/api/productcategory/${values?.productPortfolio?.productPortfolioID}`)
                 .then(response => {
                     const decryptedData = decryptObjectKeys(response.data);
                     setproductCategoryData(decryptedData)
@@ -332,7 +332,7 @@ const BookingOrder = () => {
 
     useEffect(() => {
         if (values?.productCategory?.productCategoriesID) {
-            Get(`https://localhost:44347/api/productgroup/${values?.productCategory?.productCategoriesID}`)
+            Get(`https://ssblapi.m5groupe.online:6449/api/productgroup/${values?.productCategory?.productCategoriesID}`)
                 .then(response => {
                     const decryptedData = decryptObjectKeys(response.data);
                     setproductGroupData(decryptedData)
@@ -345,7 +345,7 @@ const BookingOrder = () => {
 
     useEffect(() => {
         console.log('hello from ')
-        Get(`https://localhost:44347/api/businessmanagers?ecpDivision=${userData.ecpDivistion}`)
+        Get(`https://ssblapi.m5groupe.online:6449/api/businessmanagers?ecpDivision=${userData.ecpDivistion}`)
             .then(response => {
 
                 setBusinsessManager(response.data)
@@ -353,7 +353,7 @@ const BookingOrder = () => {
             .catch(error => console.error("Error fetching customers:", error));
     }, [userData.ecpDivistion]);
     useEffect(() => {
-        Get("https://localhost:44347/api/shipmentmode")
+        Get("https://ssblapi.m5groupe.online:6449/api/shipmentmode")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
                 setShipmentModes(decryptedData)
@@ -362,7 +362,7 @@ const BookingOrder = () => {
     }, []);
 
     useEffect(() => {
-        Get("https://localhost:44347/api/paymentmode")
+        Get("https://ssblapi.m5groupe.online:6449/api/paymentmode")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
                 setPaymentModes(decryptedData)
@@ -371,7 +371,7 @@ const BookingOrder = () => {
     }, []);
 
     useEffect(() => {
-        Get("https://localhost:44347/api/currency")
+        Get("https://ssblapi.m5groupe.online:6449/api/currency")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
                 setCurrencies(decryptedData)
@@ -384,7 +384,7 @@ const BookingOrder = () => {
 
 
     useEffect(() => {
-        Get("https://localhost:44347/api/pono") // Use the correct API that fetches only PONO
+        Get("https://ssblapi.m5groupe.online:6449/api/pono") // Use the correct API that fetches only PONO
             .then(response =>
                 setExistingRefNOs(response.data))
 

@@ -71,7 +71,7 @@ export default function JwtLoginView() {
       const encryptedPassword = encodeURIComponent(encrypt(loginInfo.Password));
       // const encryptedAgencyName = encodeURIComponent(encrypt(loginInfo.Agency));
 
-      const response = await Post(`api/Login`, {
+      const response = await Post(`https://ssblapi.m5groupe.online:6449/api/Login`, {
         userCode: loginInfo.UserCode,
         password: loginInfo.Password
       });
