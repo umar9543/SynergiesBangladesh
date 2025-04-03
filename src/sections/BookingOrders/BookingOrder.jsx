@@ -574,7 +574,7 @@ const BookingOrder = () => {
 
                 <div>
                     <Card sx={{ mt: 3, p: 2 }}>
-                        <Typography variant="h5" gutterBottom>
+                        <Typography variant="h5" sx={{ mb: 3 }}>
                             Order Booking Input Form
                         </Typography>
                         <Box
@@ -713,7 +713,7 @@ const BookingOrder = () => {
                 </div>
                 <div>
                     <Card sx={{ mt: 3, p: 2 }}>
-                        <Typography variant="h5" gutterBottom>
+                        <Typography variant="h5" sx={{ mb: 3 }}>
                             Product Information
                         </Typography>
 
@@ -753,7 +753,7 @@ const BookingOrder = () => {
                                 onChange={(_, newValue) => {
                                     setValue("productCategory", newValue); // Update productCategory
                                     setValue("productGroup", null); // Reset productGroup when category changes
-                                  }}
+                                }}
                             />
                             <RHFAutocomplete
                                 name="productGroup"
@@ -809,7 +809,7 @@ const BookingOrder = () => {
                 <Card sx={{ mt: 3, p: 2 }}>
                     <div>
 
-                        <Typography variant="h5" gutterBottom>
+                        <Typography variant="h5" sx={{ mb: 3 }}>
                             Commerical Section
                         </Typography>
                         <Box
@@ -970,10 +970,10 @@ const BookingOrder = () => {
                                 <TextField
                                     variant="outlined"
                                     name="totalMarkups"
-                                    sx={{ mt: "auto", alignSelf: "flex-end",textAlign:"right" }}
+                                    sx={{ mt: "auto", alignSelf: "flex-end", textAlign: "right" }}
                                     value={calculateMark(totalQuantity, totalMark)}
-                                   InputProps={{ readOnly: true }}
-                                    
+                                    InputProps={{ readOnly: true }}
+
                                 />
                             </Box>
                         </Box>
@@ -984,7 +984,7 @@ const BookingOrder = () => {
 
 
                 <Card sx={{ mt: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
-                    <Typography variant="h5" gutterBottom>
+                    <Typography variant="h5" sx={{ mb: 3 }}>
                         Reference & Attachment
                     </Typography>
 
@@ -1003,15 +1003,12 @@ const BookingOrder = () => {
 
 
                 </Card>
-                <Button
+                <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
+                    <Button type="submit" variant="contained" color="primary">
+                        Submit
+                    </Button>
+                </Box>
 
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    sx={{ mt: 3 }}
-                >
-                    Submit
-                </Button>
             </FormProvider>
 
         </Container >

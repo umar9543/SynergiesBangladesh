@@ -756,7 +756,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
 
                     <div>
                         <Card sx={{ mt: 3, p: 2 }}>
-                            <Typography variant="h5" gutterBottom>
+                            <Typography variant="h5" sx={{ mb: 3 }}>
                                 Order Booking Input Form
                             </Typography>
                             <Box
@@ -878,7 +878,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
                     </div>
                     <div>
                         <Card sx={{ mt: 3, p: 2 }}>
-                            <Typography variant="h5" gutterBottom>
+                            <Typography variant="h5" sx={{ mb: 3 }}>
                                 Product Information
                             </Typography>
 
@@ -971,7 +971,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
                     <Card sx={{ mt: 3, p: 2 }}>
                         <div>
 
-                            <Typography variant="h5" gutterBottom>
+                            <Typography variant="h5" sx={{ mb: 3 }}>
                                 Commerical Section
                             </Typography>
                             <Box
@@ -1146,7 +1146,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
 
 
                     <Card sx={{ mt: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
-                        <Typography variant="h5" gutterBottom>
+                        <Typography variant="h5" sx={{ mb: 3 }}>
                             Reference & Attachment
                         </Typography>
 

@@ -249,7 +249,7 @@ const ProductSpecificInfo = ({ setTotalAmount, totalAmount, totalQuantity, setTo
                 flexWrap="wrap"
                 justifyContent="space-between"
             >
-                <Typography variant="h5" gutterBottom>
+                <Typography variant="h5" sx={{ mb: 1 }}>
                     Product Specific Information
                 </Typography>
 
@@ -595,9 +595,9 @@ const ProductSpecificInfo = ({ setTotalAmount, totalAmount, totalQuantity, setTo
 
 
                     </Box>
-                    <Button variant="contained" sx={{ mt: 2 }} onClick={handleCalculate} color='primary'>
+                    {/* <Button variant="contained" sx={{ mt: 2 }} onClick={handleCalculate} color='primary'>
                         Calculate
-                    </Button>
+                    </Button> */}
                 </TableContainer>
             )}
         </Box>
