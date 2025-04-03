@@ -27,6 +27,7 @@ import FormProvider, {
     RHFUploadAvatar,
     RHFAutocomplete,
 } from 'src/components/hook-form';
+import { useSettingsContext } from "src/components/settings";
 import { decryptObjectKeys } from "src/api/encryption";
 import PropTypes from "prop-types";
 import { LoadingScreen } from "src/components/loading-screen";
@@ -220,15 +221,15 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
     const [files, setFiles] = useState([]);
 
 
-     const handleDrop = useCallback((acceptedFiles) => {
-            const newFiles = acceptedFiles.map((file) =>
-                Object.assign(file, {
-                    preview: URL.createObjectURL(file),
-                })
-            );
-        
-            setFiles((prevFiles) => [...prevFiles, ...newFiles]);
-        }, []);
+    const handleDrop = useCallback((acceptedFiles) => {
+        const newFiles = acceptedFiles.map((file) =>
+            Object.assign(file, {
+                preview: URL.createObjectURL(file),
+            })
+        );
+
+        setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+    }, []);
     const handleFileChange = (event) => {
         const selectedFiles = Array.from(event.target.files);
 
@@ -242,71 +243,71 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
         setFiles(pdfFiles);  // Store only valid PDF files
     };
 
-  const handleDeleteFile = useCallback((index) => {
-         setFiles((prevFiles) => {
-             console.log("Before Deletion:", prevFiles);
-     
-            
-             const updatedFiles = [...prevFiles];
-             updatedFiles.splice(index, 1); // Remove file at index
-     
-             console.log("After Deletion:", updatedFiles);
-             return updatedFiles;
-         });
-     }, []);
+    const handleDeleteFile = useCallback((index) => {
+        setFiles((prevFiles) => {
+            console.log("Before Deletion:", prevFiles);
 
 
-   
-   
-       useEffect(() => {
-           Get("https://ssblapi.m5groupe.online:6449/api/customer")
-               .then(response => {
-                   const decryptedData = decryptObjectKeys(response.data);
-       
-                   // ✅ Convert decrypted customerID to number
-                   const formattedData = decryptedData.map(item => ({
-                       customerID: Number(item.customerID), // Convert to number
-                       customerName: item.customerName,
-                   }));
-       
-                   setCustomerData(formattedData);
-               })
-               .catch(error => console.error("Error fetching customers:", error));
-       }, []);
-       
-   
-   
-       useEffect(() => {
+            const updatedFiles = [...prevFiles];
+            updatedFiles.splice(index, 1); // Remove file at index
+
+            console.log("After Deletion:", updatedFiles);
+            return updatedFiles;
+        });
+    }, []);
+
+
+
+
+    useEffect(() => {
+        Get("https://ssblapi.m5groupe.online:6449/api/customer")
+            .then(response => {
+                const decryptedData = decryptObjectKeys(response.data);
+
+                // ✅ Convert decrypted customerID to number
+                const formattedData = decryptedData.map(item => ({
+                    customerID: Number(item.customerID), // Convert to number
+                    customerName: item.customerName,
+                }));
+
+                setCustomerData(formattedData);
+            })
+            .catch(error => console.error("Error fetching customers:", error));
+    }, []);
+
+
+
+    useEffect(() => {
         Get("https://ssblapi.m5groupe.online:6449/api/Supplier")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
-    
+
                 // ✅ Convert supplierID to number
                 const formattedData = decryptedData.map(item => ({
                     venderLibraryID: Number(item.venderLibraryID), // Convert to number
                     venderName: item.venderName,
                 }));
-    
+
                 setSupplierData(formattedData);
             })
             .catch(error => console.error("Error fetching suppliers:", error));
     }, []);
 
-       // Fetch customer brand data based on selected customer
-       useEffect(() => {
+    // Fetch customer brand data based on selected customer
+    useEffect(() => {
         if (values?.customer?.customerID) {
             setValue('brandCustomer', null);
-            
+
             Get(`https://ssblapi.m5groupe.online:6449/api/customerbrand/${values?.customer?.customerID}`)
                 .then(response => {
                     const decryptedData = decryptObjectKeys(response.data);
-    
+
                     // ✅ Convert brandID to number
                     const formattedData = decryptedData.map(item => ({
                         brandID: Number(item.brandID), // Convert to number
                         brandName: item.brandName,
                     }));
-    
+
                     setBrandData(formattedData);
                 })
                 .catch(error => console.error("Error fetching customer brands:", error));
@@ -314,53 +315,53 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
             setBrandData([]); // Reset brand data when no customer is selected
         }
     }, [values?.customer?.customerID, setValue]);
-   
-   
+
+
     useEffect(() => {
         Get(`https://ssblapi.m5groupe.online:6449/api/Merchants?userID=${userData.userID}&roleID=${userData.roleID}`)
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
-    
+
                 // ✅ Ensure merchantID is a number
                 const formattedData = decryptedData.map(item => ({
                     userID: Number(item.userID),
                     userName: item.userName,
                 }));
-    
+
                 setMerchantData(formattedData);
             })
             .catch(error => console.error("Error fetching merchants:", error));
     }, [userData.userID, userData.roleID]);
     console.log(MerchantData);
-    
+
     useEffect(() => {
         Get("https://ssblapi.m5groupe.online:6449/api/ProductPortfolio")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
-    
+
                 // ✅ Ensure productID is a number
                 const formattedData = decryptedData.map(item => ({
                     productPortfolioID: Number(item.productPortfolioID), // Convert to number
                     productPortfolioName: item.productPortfolioName,
                 }));
-    
+
                 setproductPortfolioData(formattedData);
             })
             .catch(error => console.error("Error fetching product portfolio:", error));
     }, []);
-  
+
     useEffect(() => {
         if (values?.productPortfolio?.productPortfolioID) {
             Get(`https://ssblapi.m5groupe.online:6449/api/productcategory/${values.productPortfolio.productPortfolioID}`)
                 .then(response => {
                     const decryptedData = decryptObjectKeys(response.data);
-    
+
                     // ✅ Convert productCategoriesID to number
                     const formattedData = decryptedData.map(item => ({
                         productCategoriesID: Number(item.productCategoriesID), // Convert to number
                         productCategory: item.productCategory,
                     }));
-    
+
                     setproductCategoryData(formattedData);
                 })
                 .catch(error => console.error("Error fetching product categories:", error));
@@ -368,19 +369,19 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
             setproductCategoryData([]); // Reset category data when no product portfolio is selected
         }
     }, [values?.productPortfolio?.productPortfolioID]);
-    
+
     useEffect(() => {
         if (values?.productCategory?.productCategoriesID) {
             Get(`https://ssblapi.m5groupe.online:6449/api/productgroup/${values.productCategory.productCategoriesID}`)
                 .then(response => {
                     const decryptedData = decryptObjectKeys(response.data);
-    
+
                     // ✅ Convert productGroupID to number
                     const formattedData = decryptedData.map(item => ({
                         productGroupID: Number(item.productGroupID), // Convert to number
                         groupName: item.groupName,
                     }));
-    
+
                     setproductGroupData(formattedData);
                 })
                 .catch(error => console.error("Error fetching product groups:", error));
@@ -388,57 +389,57 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
             setproductGroupData([]); // Reset product group data when no category is selected
         }
     }, [values?.productCategory?.productCategoriesID]);
-    
-   
-       useEffect(() => {
-          
-           Get(`https://ssblapi.m5groupe.online:6449/api/businessmanagers?ecpDivision=${userData.ecpDivistion}`)
-               .then(response => {
-                   
-                       setBusinsessManager(response.data)
-              })
-               .catch(error => console.error("Error fetching customers:", error));
-       }, [userData.ecpDivistion]);
-       useEffect(() => {
+
+
+    useEffect(() => {
+
+        Get(`https://ssblapi.m5groupe.online:6449/api/businessmanagers?ecpDivision=${userData.ecpDivistion}`)
+            .then(response => {
+
+                setBusinsessManager(response.data)
+            })
+            .catch(error => console.error("Error fetching customers:", error));
+    }, [userData.ecpDivistion]);
+    useEffect(() => {
         Get("https://ssblapi.m5groupe.online:6449/api/shipmentmode")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
-    
+
                 // ✅ Ensure shipmentModeID is a number
                 const formattedData = decryptedData.map(item => ({
                     id: Number(item.id), // Convert to number
                     name: item.name,
                 }));
-    
+
                 setShipmentModes(formattedData);
             })
             .catch(error => console.error("Error fetching shipment modes:", error));
     }, []);
-    
+
     useEffect(() => {
         Get("https://ssblapi.m5groupe.online:6449/api/paymentmode")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
-    
+
                 // ✅ Ensure paymentModeID is a number
                 const formattedData = decryptedData.map(item => ({
                     id: Number(item.id), // Convert to number
                     name: item.name,
                 }));
-    
+
                 setPaymentModes(formattedData);
             })
             .catch(error => console.error("Error fetching payment modes:", error));
     }, []);
-    
-       useEffect(() => {
-           Get("https://ssblapi.m5groupe.online:6449/api/currency")
-               .then(response =>{
-                   const decryptedData = decryptObjectKeys(response.data);
-                       setCurrencies(decryptedData)
-              })
-               .catch(error => console.error("Error fetching currency:", error));
-       }, []);
+
+    useEffect(() => {
+        Get("https://ssblapi.m5groupe.online:6449/api/currency")
+            .then(response => {
+                const decryptedData = decryptObjectKeys(response.data);
+                setCurrencies(decryptedData)
+            })
+            .catch(error => console.error("Error fetching currency:", error));
+    }, []);
     const [selectedRows, setSelectedRows] = useState(currentStyles || []);
 
     const defaultValues = useMemo(
@@ -538,8 +539,8 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
             setFiles(formattedFiles);
         }
     }, [selectedBooking]);
-    
-    
+
+
     useEffect(() => {
         setValue("brandCustomer", selectedBooking?.cusBrandID
             ? brandData.find((x) => x.brandID === selectedBooking.cusBrandID)
@@ -579,16 +580,16 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
         };
         try {
             const formData = new FormData();
-                Object.keys(DataToInsert).forEach((key) => {
-                    if (DataToInsert[key] !== undefined && DataToInsert[key] !== null) {
-                        formData.append(key, DataToInsert[key]);
-                    }
-                });
-            
-                // ✅ Append files under correct key "File"
-                if (files?.length > 0) {
-                    formData.append("File", files[0]); // ✅ Backend expects `dto.File`
+            Object.keys(DataToInsert).forEach((key) => {
+                if (DataToInsert[key] !== undefined && DataToInsert[key] !== null) {
+                    formData.append(key, DataToInsert[key]);
                 }
+            });
+
+            // ✅ Append files under correct key "File"
+            if (files?.length > 0) {
+                formData.append("File", files[0]); // ✅ Backend expects `dto.File`
+            }
             let res;
 
             if (selectedBooking) {
@@ -601,7 +602,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
             }
             // eslint-disable-next-line
             else {
-                
+
 
                 res = await axios.post(`https://ssblapi.m5groupe.online:6449/api/BookingPurchase/create`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
@@ -644,7 +645,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
         }));
 
         try {
-            const res = await Post(`api/BookingPurchase/add-details`, detailPayload);
+            const res = await Post(`https://ssblapi.m5groupe.online:6449/api/BookingPurchase/add-details`, detailPayload);
             return res.status === 200; // ✅ Return true if success
         } catch (error) {
             console.error(`Error creating detail data:`, error);
@@ -701,7 +702,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
             console.log('mstData', mstData);
 
             // ✅ First, call Master API to get POID
-            const poid = await InsertMstData(mstData,files);
+            const poid = await InsertMstData(mstData, files);
 
             if (!poid) {
                 enqueueSnackbar("Something went wrong", { variant: "error" });
@@ -740,11 +741,11 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
         // setTotalMark(0); // Default if no data
         // eslint-disable-next-line 
     }, [selectedRows]);
-
+    const settings = useSettingsContext();
     // console.log("ghfg",customerData?.find((x) => x.customerID === values?.customer?.customerID))
     // console.log("custiemr",values.customer)
     return (
-        <Container>
+        <Container maxWidth={settings.themeStretch ? false : 'lg'}>
             {loading ? (
                 // Show Loader while data is being fetched
                 <LoadingScreen sx={{ height: { xs: 200, md: 300 } }} />
@@ -1092,45 +1093,49 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
                             </Box>
                             <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
                                 {/* Buyer Commission */}
-                                <Box sx={{ flex: 1 }}>
-
-                                    <RHFTextField name="buyerCommissions" label="Buyer Commission (%)" fullWidth variant="outlined" />
-
+                                <Box sx={{ flex: 1, display: "flex", flexDirection: "row", height: "100%", gap: 1 }}>
+                                    <RHFTextField
+                                        name="buyerCommissions"
+                                        label="Buyer Commission (%)"
+                                        type="number"
+                                        fullWidth
+                                        variant="outlined"
+                                    />
 
                                     <TextField
                                         variant="outlined"
-
-                                        sx={{ mt: 1 }}
+                                        sx={{ mt: "auto", alignSelf: "flex-end" }} // Ensures it stays at the bottom
                                         value={calculateCommission(values.buyerCommissions, totalAmount)}
                                         InputProps={{ readOnly: true }}
                                     />
                                 </Box>
 
                                 {/* Vendor Commission */}
-                                <Box sx={{ flex: 1 }}>
-                                    <RHFTextField name="vendorCommissions" label="Vendor Commission (%)" fullWidth variant="outlined" />
+                                <Box sx={{ flex: 1, display: "flex", flexDirection: "row", height: "100%", gap: 1 }}>
+                                    <RHFTextField name="vendorCommissions" label="Vendor Commission (%)" type="number" fullWidth variant="outlined" />
 
 
                                     <TextField
                                         variant="outlined"
 
-                                        sx={{ mt: 1 }}
+                                        sx={{ mt: "auto", alignSelf: "flex-end" }}
                                         value={calculateCommission(values.vendorCommissions, totalAmount)}
                                         InputProps={{ readOnly: true }}
                                     />
                                 </Box>
 
                                 {/* Total Markup */}
-                                <Box sx={{ flex: 1 }}>
-                                    <RHFTextField name="totalMarkups" label="Total Markup (%)" fullWidth variant="outlined" InputProps={{ readOnly: true }} InputLabelProps={{ shrink: true }} />
+                                <Box sx={{ flex: 1, display: "flex", flexDirection: "row", height: "100%", gap: 1 }}>
+                                    <TextField label="Total Markup (%)" fullWidth variant="outlined" InputProps={{ readOnly: true }} />
 
 
                                     <TextField
                                         variant="outlined"
-
-                                        sx={{ mt: 1 }}
+                                        name="totalMarkups"
+                                        sx={{ mt: "auto", alignSelf: "flex-end", textAlign: "right" }}
                                         value={calculateMark(totalQuantity, totalMark)}
                                         InputProps={{ readOnly: true }}
+
                                     />
                                 </Box>
                             </Box>

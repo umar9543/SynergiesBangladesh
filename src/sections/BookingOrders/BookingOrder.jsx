@@ -30,10 +30,8 @@ import FormProvider, {
 } from 'src/components/hook-form';
 import PropTypes from "prop-types";
 import { decryptObjectKeys } from "src/api/encryption";
+import { useSettingsContext } from "src/components/settings";
 import ProductSpecificInfo from "./Purchase";
-
-
-
 
 
 const BookingOrder = () => {
@@ -118,8 +116,8 @@ const BookingOrder = () => {
         vendorCommissions: Yup.number(),
         totalMarkups: Yup.number(),
         comments: Yup.string().nullable(),
-        files:  Yup.mixed().nullable().required("File is required"),
-      
+        files: Yup.mixed().nullable().required("File is required"),
+
 
     });
 
@@ -220,10 +218,10 @@ const BookingOrder = () => {
 
         if (files) {
             setValue('files', newFiles, { shouldValidate: true });
-          }
-        
-    }, [setValue,files]);
+        }
 
+    }, [setValue, files]);
+    const settings = useSettingsContext();
     const handleFileChange = (event) => {
         const selectedFiles = Array.from(event.target.files);
 
@@ -416,7 +414,7 @@ const BookingOrder = () => {
 
         try {
 
-            const res = await Post(`api/BookingPurchase/create`, formData, {
+            const res = await Post(`https://ssblapi.m5groupe.online:6449/api/BookingPurchase/create`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
 
@@ -457,7 +455,7 @@ const BookingOrder = () => {
         }));
 
         try {
-            const res = await Post(`api/BookingPurchase/add-details`, detailPayload);
+            const res = await Post(`https://ssblapi.m5groupe.online:6449/api/BookingPurchase/add-details`, detailPayload);
             return res.status === 200; // ✅ Return true if success
         } catch (error) {
             console.error(`Error creating detail data:`, error);
@@ -554,7 +552,7 @@ const BookingOrder = () => {
         // eslint-disable-next-line 
     }, [selectedRows]);
     return (
-        <Container>
+        <Container maxWidth={settings.themeStretch ? false : 'lg'}>
             <Box
                 display="flex"
                 justifyContent="space-between"
@@ -563,7 +561,8 @@ const BookingOrder = () => {
                     heading="Booking Order Information"
                     links={[
                         { name: "Home", href: paths.dashboard.root },
-                        { name: "Booking Order" },
+                        { name: "Booking Order", href: paths.dashboard.bookingOrder.root },
+                        { name: "Add", },
                     ]}
                     sx={{ mb: { xs: 3, md: 5 } }}
                 />
@@ -595,27 +594,42 @@ const BookingOrder = () => {
                             <Controller
                                 name="placementDates"
                                 control={control}
-                                render={({ field }) => (
+                                render={({ field, fieldState: { error } }) => (
                                     <DatePicker
                                         label="Placement Date"
                                         format="dd/MM/yyyy"
                                         value={field.value}
                                         onChange={(newValue) => field.onChange(newValue)}
                                         renderInput={(params) => <TextField {...params} />}
+                                        slotProps={{
+                                            textField: {
+                                                fullWidth: true,
+                                                error: !!error,
+                                                helperText: error?.message,
+                                            },
+                                        }}
                                     />
                                 )}
+
                             />
 
                             <Controller
                                 name="shipmentDateVendor"
                                 control={control}
-                                render={({ field }) => (
+                                render={({ field, fieldState: { error } }) => (
                                     <DatePicker
                                         label="Shipment Date (Buyer)"
                                         format="dd/MM/yyyy"
                                         value={field.value}
                                         onChange={(newValue) => field.onChange(newValue)}
                                         renderInput={(params) => <TextField {...params} />}
+                                        slotProps={{
+                                            textField: {
+                                                fullWidth: true,
+                                                error: !!error,
+                                                helperText: error?.message,
+                                            },
+                                        }}
                                     />
                                 )}
                             />
@@ -664,13 +678,20 @@ const BookingOrder = () => {
                             <Controller
                                 name="shipmentDateBuyer"
                                 control={control}
-                                render={({ field }) => (
+                                render={({ field, fieldState: { error } }) => (
                                     <DatePicker
                                         label="Shipment Date (Vendor)"
                                         format="dd/MM/yyyy"
                                         value={field.value}
                                         onChange={(newValue) => field.onChange(newValue)}
                                         renderInput={(params) => <TextField {...params} />}
+                                        slotProps={{
+                                            textField: {
+                                                fullWidth: true,
+                                                error: !!error,
+                                                helperText: error?.message,
+                                            },
+                                        }}
                                     />
                                 )}
                             />
@@ -729,7 +750,10 @@ const BookingOrder = () => {
                                 getOptionLabel={(option) => option?.productCategory || ""}
                                 value={productCategoryData?.find((x) => x.productCategory === values?.productCategory?.productCategory) || null}
                                 fullWidth
-
+                                onChange={(_, newValue) => {
+                                    setValue("productCategory", newValue); // Update productCategory
+                                    setValue("productGroup", null); // Reset productGroup when category changes
+                                  }}
                             />
                             <RHFAutocomplete
                                 name="productGroup"
@@ -907,45 +931,49 @@ const BookingOrder = () => {
                         </Box>
                         <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
                             {/* Buyer Commission */}
-                            <Box sx={{ flex: 1 }}>
-
-                                <RHFTextField name="buyerCommissions" label="Buyer Commission (%)" fullWidth variant="outlined" />
-
+                            <Box sx={{ flex: 1, display: "flex", flexDirection: "row", height: "100%", gap: 1 }}>
+                                <RHFTextField
+                                    name="buyerCommissions"
+                                    label="Buyer Commission (%)"
+                                    type="number"
+                                    fullWidth
+                                    variant="outlined"
+                                />
 
                                 <TextField
                                     variant="outlined"
-
-                                    sx={{ mt: 1 }}
+                                    sx={{ mt: "auto", alignSelf: "flex-end" }} // Ensures it stays at the bottom
                                     value={calculateCommission(values.buyerCommissions, totalAmount)}
                                     InputProps={{ readOnly: true }}
                                 />
                             </Box>
 
                             {/* Vendor Commission */}
-                            <Box sx={{ flex: 1 }}>
-                                <RHFTextField name="vendorCommissions" label="Vendor Commission (%)" fullWidth variant="outlined" />
+                            <Box sx={{ flex: 1, display: "flex", flexDirection: "row", height: "100%", gap: 1 }}>
+                                <RHFTextField name="vendorCommissions" label="Vendor Commission (%)" type="number" fullWidth variant="outlined" />
 
 
                                 <TextField
                                     variant="outlined"
 
-                                    sx={{ mt: 1 }}
+                                    sx={{ mt: "auto", alignSelf: "flex-end" }}
                                     value={calculateCommission(values.vendorCommissions, totalAmount)}
                                     InputProps={{ readOnly: true }}
                                 />
                             </Box>
 
                             {/* Total Markup */}
-                            <Box sx={{ flex: 1 }}>
+                            <Box sx={{ flex: 1, display: "flex", flexDirection: "row", height: "100%", gap: 1 }}>
                                 <TextField label="Total Markup (%)" fullWidth variant="outlined" InputProps={{ readOnly: true }} />
 
 
                                 <TextField
                                     variant="outlined"
                                     name="totalMarkups"
-                                    sx={{ mt: 1 }}
+                                    sx={{ mt: "auto", alignSelf: "flex-end",textAlign:"right" }}
                                     value={calculateMark(totalQuantity, totalMark)}
-                                    InputProps={{ readOnly: true }}
+                                   InputProps={{ readOnly: true }}
+                                    
                                 />
                             </Box>
                         </Box>

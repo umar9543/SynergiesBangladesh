@@ -21,11 +21,13 @@ import {
     Typography,
     Autocomplete,
     Card,
+    Stack
 } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import { enqueueSnackbar } from "notistack";
 import Scrollbar from "src/components/scrollbar";
 import { decryptObjectKeys } from "src/api/encryption";
+
 
 const ProductSpecificInfo = ({ setTotalAmount, totalAmount, totalQuantity, setTotalQuantity, cancelQuantity,
     setCancelQuantity, selectedRows, setSelectedRows, totalMark, setTotalMark }) => {
@@ -182,11 +184,11 @@ const ProductSpecificInfo = ({ setTotalAmount, totalAmount, totalQuantity, setTo
     const paginatedData = dataList.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
     useEffect(() => {
         axios.get("https://ssblapi.m5groupe.online:6449/api/SizeRange")
-            .then(response =>{
+            .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
-                   setSizeRangeData(decryptedData)
+                setSizeRangeData(decryptedData)
             })
-            
+
             .catch(error => console.error("Error fetching sizes:", error));
     }, []);
 
@@ -196,7 +198,7 @@ const ProductSpecificInfo = ({ setTotalAmount, totalAmount, totalQuantity, setTo
             markupPerPc: row.itemPrice ? (Number(row.itemPrice) - Number(row.vendorPrice || row.itemPrice)) : 0,
             contractValue: row.poQuantity ? (Number(row.poQuantity) * Number(row.itemPrice || 0)) : 0,
         }));
-        console.log("markup",updatedRows)
+        console.log("markup", updatedRows)
         // Only update if the new state is different from the current state
         setSelectedRows(prevRows => {
             const isSame = JSON.stringify(prevRows) === JSON.stringify(updatedRows);
@@ -242,27 +244,31 @@ const ProductSpecificInfo = ({ setTotalAmount, totalAmount, totalQuantity, setTo
     };
     return (
         <Box>
-            <Typography variant="h5" gutterBottom>
-                Product Specific Information
-            </Typography>
-
-            {/* Add Item Details Button */}
             <Box
-                rowGap={3}
-                columnGap={2}
                 display="flex"
                 flexWrap="wrap"
                 justifyContent="space-between"
-                sx={{
-                    mb: 3,
-                }}
             >
+                <Typography variant="h5" gutterBottom>
+                    Product Specific Information
+                </Typography>
+
+                {/* Add Item Details Button */}
+                <Box
+                    rowGap={3}
+                    columnGap={2}
+                    display="flex"
+                    flexWrap="wrap"
+                    justifyContent="space-between"
+
+                >
 
 
 
-                <Button variant="contained" color="primary" onClick={handleOpen}>
-                    Add Item Details
-                </Button>
+                    <Button variant="contained" color="primary" onClick={handleOpen}>
+                        Add Item Details
+                    </Button>
+                </Box>
             </Box>
 
 
@@ -277,21 +283,25 @@ const ProductSpecificInfo = ({ setTotalAmount, totalAmount, totalQuantity, setTo
                         onChange={handleStyleNoChange}
                         margin="dense"
                     />
-                    <LoadingButton
-                        variant="contained"
-                        onClick={handleGetData}
-                        loading={loading}
-                        sx={{ mt: 2 }}
-                    >
-                        Get Data
-                    </LoadingButton>
-                    <LoadingButton
-                        variant="contained"
-                        onClick={handleShowAddStyleForm}
-                        sx={{ mt: 2, ml: 2 }}
-                    >
-                        Add Style
-                    </LoadingButton>
+                    <Stack direction="row" justifyContent="flex-end" spacing={2} sx={{ mt: 2 }}>
+                        <LoadingButton
+                            variant="contained"
+                            color="primary"
+                            onClick={handleGetData}
+                            loading={loading}
+                            sx={{ mt: 2 }}
+                        >
+                            Get Data
+                        </LoadingButton>
+                        <LoadingButton
+                            variant="contained"
+                            color="primary"
+                            onClick={handleShowAddStyleForm}
+                            sx={{ mt: 2, ml: 2 }}
+                        >
+                            Add Style
+                        </LoadingButton>
+                    </Stack>
 
                     {showAddStyleForm && (
                         <>
