@@ -33,6 +33,10 @@ const BookingViewPage = lazy(() => import('src/pages/dashboard/BookingOrder/view
 const BookingAddPage = lazy(() => import('src/pages/dashboard/BookingOrder/add'));
 const BookingEditPage = lazy(() => import('src/pages/dashboard/BookingOrder/edit'));
 
+const SalesContractPage = lazy(() => import('src/pages/dashboard/SalesContract/view'));
+const SalesContractAddPage = lazy(() => import('src/pages/dashboard/SalesContract/add'));
+const SalesContractEditPage = lazy(() => import('src/pages/dashboard/SalesContract/edit'));
+
 // ----------------------------------------------------------------------
 
 
@@ -145,6 +149,15 @@ export const dashboardRoutes = [
           // { path: 'view', element: <BookingViewPage /> },
           { path: 'add', element: <BookingAddPage /> },
           { path: 'edit/:id', element: <BookingEditPage /> },
+        ],
+      },
+      {
+        path: 'SalesContract',
+        children: [
+          { element: <SalesContractPage />, index: true },
+          // { path: 'view', element: <BookingViewPage /> },
+          { path: 'add', element: <SalesContractAddPage /> },
+          { path: 'edit/:id', element: <SalesContractEditPage /> },
         ],
       }
     ],

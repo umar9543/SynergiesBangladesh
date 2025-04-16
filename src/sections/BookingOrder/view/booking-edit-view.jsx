@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Container from '@mui/material/Container';
 
 import { paths } from 'src/routes/paths';
-import BookingEdit from 'src/sections/BookingOrders/BookingEdit';
+import BookingEdit from 'src/sections/BookingOrder/BookingOrders/BookingEdit';
 import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import { useEffect, useState } from 'react';

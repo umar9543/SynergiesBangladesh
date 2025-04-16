@@ -3,13 +3,13 @@ import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router';
 import { decrypt } from 'src/api/encryption';
 import { paths } from 'src/routes/paths';
-import BookingOrder from 'src/sections/BookingOrder/BookingOrders/BookingOrder';
+import { BookingListView } from 'src/sections/SalesContract/view';
 
 
 
 // ----------------------------------------------------------------------
 
-export default function BookingOrderAddPage() {
+export default function SalesContractViewPage() {
   const navigate = useNavigate()
   const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
 
@@ -21,10 +21,10 @@ export default function BookingOrderAddPage() {
   return (
     <>
       <Helmet>
-        <title>Booking Order</title>
+        <title>Sales Contract</title>
       </Helmet>
 
-      <BookingOrder/>
+      <BookingListView/>
     </>
   );
 }

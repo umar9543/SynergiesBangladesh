@@ -77,6 +77,11 @@ export const paths = {
       root: `${ROOTS.DASHBOARD}/BookingOrder`,
       add:  `${ROOTS.DASHBOARD}/BookingOrder/add`,
       edit:(id) =>`${ROOTS.DASHBOARD}/BookingOrder/edit/${id}`
+    },
+    SalesContract:{
+      root: `${ROOTS.DASHBOARD}/SalesContract`,
+      add:  `${ROOTS.DASHBOARD}/SalesContract/add`,
+      edit:(id) =>`${ROOTS.DASHBOARD}/SalesContract/edit/${id}`
     }
   },
 };

@@ -117,6 +117,17 @@ export function useNavData() {
           //   // },
           // ]
       },
+
+      {
+        subheader: t('Application'),
+        items: [
+          {
+            title: t('Sales Contract '),
+            path: paths.dashboard.SalesContract.root,
+            icon: ICONS.booking,
+          },
+        ],
+      },
     ],
     [t]
   );
