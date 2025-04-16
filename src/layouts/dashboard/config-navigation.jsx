@@ -124,7 +124,7 @@ export function useNavData() {
           {
             title: t('Sales Contract '),
             path: paths.dashboard.SalesContract.root,
-            icon: ICONS.booking,
+            icon: ICONS.assignment,
           },
         ],
       },
