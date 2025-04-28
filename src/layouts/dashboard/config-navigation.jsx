@@ -5,7 +5,7 @@ import { paths } from 'src/routes/paths';
 import { useTranslate } from 'src/locales';
 
 import SvgColor from 'src/components/svg-color';
-import { decrypt } from 'src/api/encryption';
+import {  decryptObjectKeys } from 'src/api/encryption';
 
 // ----------------------------------------------------------------------
 
@@ -49,7 +49,13 @@ const ICONS = {
 
 export function useNavData() {
   const { t } = useTranslate();
-  const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
+  const userData = useMemo(() => {
+    const parsedData = JSON.parse(localStorage.getItem('UserData'));
+    return decryptObjectKeys(
+      Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
+    );
+  }, []);
+  
 
   const data = useMemo(
     () => [
@@ -123,8 +129,13 @@ export function useNavData() {
         items: [
           {
             title: t('Sales Contract '),
-            path: paths.dashboard.SalesContract.root,
+          path: paths.dashboard.root,
             icon: ICONS.assignment,
+            children: [
+              { title: t('Sales Contract'), path: paths.dashboard.SalesContract.root },
+            
+      
+            ]
           },
         ],
       },

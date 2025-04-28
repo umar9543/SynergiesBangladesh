@@ -44,13 +44,17 @@ import FormProvider, {
 import PropTypes from "prop-types";
 import { decryptObjectKeys } from "src/api/encryption";
 import { useSettingsContext } from "src/components/settings";
-import ProductSpecificInfo from "./Purchase";
-import KPITestRadar from "./Chart";
+
 
 
 const SalesContractAdd = () => {
 
-    const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
+     const userData = useMemo(() => {
+              const parsedData = JSON.parse(localStorage.getItem('UserData'));
+              return decryptObjectKeys(
+                Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
+              );
+            }, []);
     const certificationOptions = ["Yes", "No"];
     const [selectedCertification, setSelectedCertification] = useState(null);
     const [certificationValues, setCertificationValues] = useState({
@@ -101,16 +105,15 @@ const SalesContractAdd = () => {
         //     .required("Shipment Date (Buyer) is required")
         //     .min(Yup.ref('IssuingDate'), "Shipment Date (Buyer) must be after Placement Date"),
 
-        // ApplyDate: Yup.date()
-        //     .required("Shipment Date (Vendor) is required")
+         ApplyDate: Yup.date().required("Apply Date is required"),
         //     .min(Yup.ref('IssuingDate'), "Shipment Date (Vendor) must be after Placement Date"),
-        // customer: Yup.object().nullable().required("Customer is required"),
+        customer: Yup.object().nullable().required("Customer is required"),
 
-        // supplier: Yup.object().nullable().required("Supplier is required"),
+        supplier: Yup.object().nullable().required("Supplier is required"),
 
-
+        Items: Yup.string().required("Items is required"),
         // Currency: Yup.object().nullable().required("Currency is required"),
-
+        ReasonOfDelayInLC: Yup.string().required("ReasonOfDelayInLC is required"),
         // certification: Yup.string().required("Certification selection is required"),
         // buyerCommissions: Yup.number(),
         // vendorCommissions: Yup.number(),
@@ -322,10 +325,10 @@ const SalesContractAdd = () => {
                 SupplierID: data.supplier?.venderLibraryID,
                 ApplyDate: data.ApplyDate ? toUTCISOString(new Date(data.ApplyDate)) : null,
                 BankID: data.ApplicantBankID || 0,
-                SalesContractDate: data.IssuingDate ? toUTCISOString(new Date(data.IssuingDate)) : null,
+                SalesContractDate: data.IssuingDate ? toUTCISOString(new Date(data.IssuingDate)) : new Date(0),
                 ExpiryDate: toUTCISOString(new Date(data.ExpiryDate)),
-                Payment: data.PaymentMode,
-                PaymentType: data.PaymentType,
+                Payment: data.PaymentType,
+              
                 ToleranceInDays: data.ToleranceInDays,
                 Items: data.Items,
                 FabricSource: data.FabricSource,
@@ -335,8 +338,8 @@ const SalesContractAdd = () => {
                 ItemDescription: data.ItemDes,
                 SalesContractType: data.SalesContractType,
                 LogisticComments: data.LogisticComments || "",
-                MerchandiserComments: data.MerComm||"",
-                ApplicantBankRequired: data.ApplicantBankRequired,
+                MerchandiserComments: data.MerComm || "",
+                ApplicantBankRequired: data.ApplicantBankRequired||0,
                 ApprovalByHOD: data.ApprovalByHOD,
                 ApprovalByManagment: data.ApprovalByManagment,
                 ApprovalByGM: data.ApprovalByGM,
@@ -461,8 +464,8 @@ const SalesContractAdd = () => {
                 apiUrl = `https://localhost:44347/api/poreport?customerId=${customerId}&supplierId=${supplierId}`;
 
             }
-            
-           
+
+
             const response = await fetch(apiUrl);
             if (!response.ok) throw new Error("Failed to fetch data");
 
@@ -660,7 +663,7 @@ const SalesContractAdd = () => {
                             sx={{ mb: 3 }}
                         >
                             {/* Booking Reference No */}
-                            {[1, 24, 4].includes(userData.roleID) && (
+                            {[1, 24, 4].includes(userData[0].roleID) && (
                                 <>
                                     <RHFTextField name="SalesContractNo" label="Sales Contract No" />
 
@@ -803,7 +806,7 @@ const SalesContractAdd = () => {
                                                         <TableCell sx={{ minWidth: 100 }} >Select</TableCell>
                                                         <TableCell sx={{ minWidth: 100 }}>Style No</TableCell>
                                                         <TableCell sx={{ minWidth: 100 }}>Article</TableCell>
-                                                        <TableCell sx={{ minWidth: 100 }}>PONO</TableCell>
+                                                        <TableCell sx={{ minWidth: 100 }}>PO. No</TableCell>
 
                                                         <TableCell sx={{ minWidth: 100 }}>Shipment Date</TableCell>
                                                         <TableCell sx={{ minWidth: 100 }}>Quantity</TableCell>
@@ -891,18 +894,18 @@ const SalesContractAdd = () => {
 
                                                 <TableCell sx={{ minWidth: 100 }}>Style No</TableCell>
                                                 <TableCell sx={{ minWidth: 100 }}>Article</TableCell>
-                                                <TableCell sx={{ minWidth: 100 }}>PONO</TableCell>
+                                                <TableCell sx={{ minWidth: 100 }}>PO. No</TableCell>
 
                                                 <TableCell sx={{ minWidth: 100 }}>Shipment Date</TableCell>
                                                 <TableCell sx={{ minWidth: 100 }}>Quantity</TableCell>
-                                                <TableCell sx={{ minWidth: 100 }}>Unit Price</TableCell>
+                                                <TableCell sx={{ minWidth: 80 }}>Unit Price</TableCell>
                                                 <TableCell sx={{ minWidth: 100 }}>Total Amount</TableCell>
                                                 <TableCell sx={{ minWidth: 100 }}>Currency</TableCell>
                                                 <TableCell sx={{ minWidth: 100 }}>Customer FOB</TableCell>
                                                 <TableCell sx={{ minWidth: 100 }}>Buyer Commission (%)</TableCell>
                                                 <TableCell sx={{ minWidth: 100 }}>Vendor Commission (%)</TableCell>
                                                 <TableCell sx={{ minWidth: 100 }}>Mark-Up Per Pc.</TableCell>
-                                                <TableCell  >Remove</TableCell>
+                                                <TableCell sx={{ minWidth: 100 }}>Remove</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
@@ -1027,16 +1030,16 @@ const SalesContractAdd = () => {
                             }}
                         >
 
-                            <RHFTextField name="TermOfSales" label="Term of Sales" defaultValue="FOB Bangladesh" disabled />
-                            <RHFTextField name="GoodsOrigin" label="Goods Origin" defaultValue="Bangladesh" disabled />
-                            <RHFTextField name="TransShipment" label="Trans Shipment" defaultValue="Allowed" disabled />
-                            <RHFTextField name="PartShipment" label="Part Shipment" defaultValue="Allowed" disabled />
+                            <RHFTextField name="TermOfSales" label="Term of Sales" defaultValue="FOB BANGLADESH" disabled />
+                            <RHFTextField name="GoodsOrigin" label="Goods Origin" defaultValue="BANGLADESH" disabled />
+                            <RHFTextField name="TransShipment" label="Trans Shipment" defaultValue="ALLOWED" disabled />
+                            <RHFTextField name="PartShipment" label="Part Shipment" defaultValue="ALLOWED" disabled />
                             <RHFTextField name="PaymentType" label="Payment type" InputLabelProps={{ shrink: true }} disabled />
                             <RHFTextField name="PaymentMode" label=" Payment mode" InputLabelProps={{ shrink: true }} disabled />
-                            <RHFTextField name="CertificateOfOrigin" label="Certificate of Origin / GSP Form A" defaultValue="Will be provided" disabled />
+                            <RHFTextField name="CertificateOfOrigin" label="Certificate of Origin / GSP Form A" defaultValue="WILL BE PROVIDED" disabled />
                             <RHFTextField name="ToleranceInDays" label="Tolerance [%]" defaultValue="" disabled />
-                            <RHFTextField name="Packing" label="Packing" defaultValue="Export Standard" disabled />
-                            <RHFTextField name="ShipmentFrom" label="Shipment From" defaultValue="Any port of Bangladesh" disabled />
+                            <RHFTextField name="Packing" label="Packing" defaultValue="EXPORT STANDARD" disabled />
+                            <RHFTextField name="ShipmentFrom" label="Shipment From" defaultValue="ANY PORT OF BANGLADESH" disabled />
                             <RHFTextField name="Items" label="Items" />
                             <RHFAutocomplete
                                 name="FabricSource"
@@ -1065,14 +1068,16 @@ const SalesContractAdd = () => {
                                     />
                                 )}
                             />
-                            <RHFTextField name="PortOfDestination" label="Port" />
+                            {[1, 24, 4].includes(userData[0].roleID) && (
+                                <RHFTextField name="PortOfDestination" label="Port of Destination" />
+                            )}
                             <RHFTextField name="ReasonOfDelayInLC" label="Reason Of Delay in TT" />
 
                             <RHFAutocomplete
                                 name="SalesContractType"
                                 label="Sales contract type"
                                 options={salesType}
-                               
+
                                 fullWidth
                             />
 
@@ -1081,9 +1086,10 @@ const SalesContractAdd = () => {
                                 label="Bank"
                                 options={currencies}
                                 getOptionLabel={(option) => option?.bankName || ""}
+                                value={currencies?.find((x) => x.bankID === values?.ApplicantBankID?.bankID) || null}
                                 onChange={(_, newValue) => {
                                     setValue("ApplicantBankID", newValue?.bankID || 0, { shouldValidate: true });
-                                    setValue("ApplicantBankRequired", newValue?.bankID!==0, { shouldValidate: true }); // 👈 sets boolean
+                                    setValue("ApplicantBankRequired", newValue?.bankID !== 0, { shouldValidate: true }); // 👈 sets boolean
                                 }}
                                 fullWidth
                             />
@@ -1098,7 +1104,9 @@ const SalesContractAdd = () => {
 
 
                             <RHFTextField name="ItemDes" label="Item description" InputLabelProps={{ shrink: true }} multiline sx={{ mb: 2 }} rows={3} />
+                            {[1, 24, 4].includes(userData[0].roleID) && (
                             <RHFTextField name="LogisticComments" label="Logistics Comments" multiline sx={{ mb: 2 }} rows={3} />
+                            )}
                             <RHFTextField name="MerComm" label="Merchandiser Comments" multiline sx={{ mb: 2 }} rows={3} />
 
                         </Box>

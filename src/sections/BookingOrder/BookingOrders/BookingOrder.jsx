@@ -36,7 +36,12 @@ import ProductSpecificInfo from "./Purchase";
 
 const BookingOrder = () => {
 
-    const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
+      const userData = useMemo(() => {
+         const parsedData = JSON.parse(localStorage.getItem('UserData'));
+         return decryptObjectKeys(
+           Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
+         );
+       }, []);
     const certificationOptions = ["Yes", "No"];
     const [selectedCertification, setSelectedCertification] = useState(null);
     const [certificationValues, setCertificationValues] = useState({
@@ -296,13 +301,13 @@ const BookingOrder = () => {
 
 
     useEffect(() => {
-        Get(`https://ssblapi.m5groupe.online:6449/api/Merchants?userID=${userData.userID}&roleID=${userData.roleID}`)
+        Get(`https://ssblapi.m5groupe.online:6449/api/Merchants?userID=${userData[0].userID}&roleID=${userData[0].roleID}`)
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
                 setMerchantData(decryptedData)
             })
             .catch(error => console.error("Error fetching customers:", error));
-    }, [userData.userID, userData.roleID]);
+    }, [userData]);
 
 
     useEffect(() => {
@@ -343,13 +348,13 @@ const BookingOrder = () => {
 
     useEffect(() => {
         console.log('hello from ')
-        Get(`https://ssblapi.m5groupe.online:6449/api/businessmanagers?ecpDivision=${userData.ecpDivistion}`)
+        Get(`https://ssblapi.m5groupe.online:6449/api/businessmanagers?ecpDivision=${userData[0].ecpDivistion}`)
             .then(response => {
 
                 setBusinsessManager(response.data)
             })
             .catch(error => console.error("Error fetching customers:", error));
-    }, [userData.ecpDivistion]);
+    }, [userData]);
     useEffect(() => {
         Get("https://ssblapi.m5groupe.online:6449/api/shipmentmode")
             .then(response => {

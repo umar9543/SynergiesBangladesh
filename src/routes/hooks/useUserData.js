@@ -1,10 +1,12 @@
 import { useMemo } from 'react';
-import { decrypt } from 'src/api/encryption';
+import { decrypt, decryptObjectKeys } from 'src/api/encryption';
 
 const useUserData = () => {
-  const userData = useMemo(() => {
-    const data = localStorage.getItem('UserData');
-    return data ? JSON.parse(data) : null;
+ const userData = useMemo(() => {
+    const parsedData = JSON.parse(localStorage.getItem('UserData'));
+    return decryptObjectKeys(
+      Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
+    );
   }, []);
   
   return userData ? userData.map(user => ({

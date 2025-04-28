@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useParams } from 'react-router';
-import { decrypt, decryptObjectKeys } from 'src/api/encryption';
+import { decrypt } from 'src/api/encryption';
 import { paths } from 'src/routes/paths';
 import SalesContractEdit from 'src/sections/SalesContract/SalesPages/SalesContractEdit';
 import { BookingEditView } from 'src/sections/SalesContract/view';
@@ -15,12 +15,7 @@ import SalesContractEditView from 'src/sections/SalesContract/view/booking-edit-
 export default function SalesContractEditPage() {
   const navigate = useNavigate()
   const param = useParams();
-  const userData = useMemo(() => {
-     const parsedData = JSON.parse(localStorage.getItem('UserData'));
-     return decryptObjectKeys(
-       Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
-     );
-   }, []);
+  const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
 console.log(param,'paramas')
   // useEffect(() => {
   //   if (userData.roleID !== '1') {

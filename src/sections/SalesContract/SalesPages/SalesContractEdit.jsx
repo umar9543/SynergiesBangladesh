@@ -45,6 +45,7 @@ import axios from "axios";
 import PropTypes from "prop-types";
 import { decryptObjectKeys } from "src/api/encryption";
 import { useSettingsContext } from "src/components/settings";
+import { LoadingScreen } from "src/components/loading-screen";
 
 
 
@@ -54,7 +55,12 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
 
 
 
-    const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
+    const userData = useMemo(() => {
+        const parsedData = JSON.parse(localStorage.getItem('UserData'));
+        return decryptObjectKeys(
+            Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
+        );
+    }, []);
     const certificationOptions = ["Yes", "No"];
     const [selectedCertification, setSelectedCertification] = useState(null);
     const [certificationValues, setCertificationValues] = useState({
@@ -131,10 +137,11 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
     const salesType = ["SC-SSBL", "SC-SHKL", "SC-KIK", "SC-SOK"];
     const [selectedLCOption, setSelectedLCOption] = useState(selectedBooking?.salesContractType || null);
     const [Fbsrc, setFbsrc] = useState(selectedBooking?.fabricSource || null);
+
     const defaultValues = useMemo(
         () => ({
             SalesContractNo: selectedBooking?.salesContractNo || '',
-            ApplyDate: selectedBooking?.ApplyDate || null,
+            ApplyDate: selectedBooking?.ApplyDate || "",
             IssuingDate: selectedBooking?.IssuingDate || null,
             ExpectedLCDate: selectedBooking?.expectedLCDate || '',
 
@@ -145,9 +152,10 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
             supplier: selectedBooking?.supplierID
                 ? SupplierData.find((x) => x.venderLibraryID === selectedBooking.supplierID)
                 : null,
-            BankID: selectedBooking?.bankID ?
-                currencies.find((x) => x.bankID === JSON.stringify(selectedBooking.bankID))
+            ApplicantBankID: selectedBooking?.bankID
+                ? currencies.find((x) => x.bankID === selectedBooking.bankID.toString())
                 : null,
+
             PaymentMode: paymentData.PaymentMode,
             PaymentType: paymentData.PaymentType,
             ToleranceInDays: paymentData.ToleranceInDays,
@@ -173,6 +181,7 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
             totalQuantity: selectedBooking?.totalSalesOrderQty || 0,
             totalcomm: selectedBooking?.synergiesTotalCommission || 0,
             totalcommpc: selectedBooking?.commissionInPercent || 0,
+
         }),
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [
@@ -294,16 +303,13 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
     }, []);
 
 
-    const [selectedRows, setSelectedRows] = useState(currentStyles || []);
+    const [selectedRows, setSelectedRows] = useState([]);
     useEffect(() => {
-        if (selectedBooking) {
-            setLoading(true); // Enable loader
-            setTimeout(() => {
-                methods.reset(defaultValues); // Reset form with fetched values
-                setLoading(false); // Disable loader when data is ready
-            }, 5000); // Simulating API delay (replace with actual API call)
+        if (currentStyles.length > 0) {
+            setSelectedRows(currentStyles);
         }
-    }, [selectedBooking, defaultValues, methods]);
+    }, [currentStyles]);
+
     const InsertMstData = async (DataToInsert) => {
         try {
             let res;
@@ -385,7 +391,7 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
                 CustomerID: data.customer?.customerID,
                 SupplierID: data.supplier?.venderLibraryID,
                 ApplyDate: data.ApplyDate ? toUTCISOString(new Date(data.ApplyDate)) : null,
-                BankID: data.ApplicantBankID || 0,
+                BankID: data.ApplicantBankID.bankID || 0,
                 SalesContractDate: data.IssuingDate ? toUTCISOString(new Date(data.IssuingDate)) : null,
                 ExpiryDate: toUTCISOString(data?.ExpiryDate),
                 Payment: data.PaymentMode,
@@ -399,7 +405,7 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
                 ItemDescription: data.ItemDes,
                 SalesContractType: data.SalesContractType,
                 LogisticComments: data.LogisticComments || "",
-                MerchandiserComments: data.MerComm||"",
+                MerchandiserComments: data.MerComm || "",
                 ApplicantBankRequired: data?.ApplicantBankRequired,
                 ApprovalByHOD: data.ApprovalByHOD,
                 ApprovalByManagment: data.ApprovalByManagment,
@@ -427,7 +433,7 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
             // ✅ If ContractID is received, submit detail data
             const isDetailSuccess = await InsertDetailData(contractID, selectedRows);
 
-            if (!isDetailSuccess) {
+            if (!isDetailSuccess || !selectedRows) {
                 enqueueSnackbar("Something went wrong", { variant: "error" });
                 return false;
             }
@@ -479,41 +485,6 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
 
         setDataList([]);
     };
-    useEffect(() => {
-        // Ensure there are selected rows before proceeding
-        if (!selectedRows || selectedRows.length === 0) return;
-
-        // Extract POIDs from selected rows
-        const poids = selectedRows.map((item) => item.poid).join(',');
-
-        // Define an asynchronous function to fetch data
-        const fetchData = async () => {
-            try {
-                // Fetch item descriptions
-                const descriptionResponse = await fetch(`https://localhost:44347/api/SalesContract/description-by-poid?poids=${poids}`);
-                if (!descriptionResponse.ok) throw new Error("Failed to fetch item description");
-                const descriptionData = await descriptionResponse.json();
-
-                // Fetch brand data
-                const brandResponse = await fetch(`https://localhost:44347/api/SalesContract/brands-by-poids?poids=${poids}`);
-                if (!brandResponse.ok) throw new Error("Failed to fetch brand data");
-                const brandData = await brandResponse.json();
-
-                // Set form values using the fetched data
-                setValue("ItemDes", Array.isArray(descriptionData) ? descriptionData.join(", ") : "");
-                setValue("Brand", Array.isArray(brandData) ? brandData.join(", ") : "");
-
-            } catch (error) {
-                console.error("Error during fetch:", error.message);
-            }
-        };
-
-        // Invoke the fetchData function
-        fetchData();
-    }, [selectedRows, setValue]);
-
-
-
     const handleGetData = async () => {
 
         if (!values?.customer?.customerID || !values?.supplier?.venderLibraryID) {
@@ -568,6 +539,46 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
         setSelectedRows(updatedSelectedRows);
     };
 
+    // import { useCallback, useEffect } from "react";
+
+    const fetchPOData = useCallback(async () => {
+        if (!selectedRows || selectedRows.length === 0) return;
+
+        const poids = selectedRows.map((item) => item.poid).join(',');
+
+        try {
+            // Fetch item descriptions
+            const descriptionResponse = await fetch(`https://localhost:44347/api/SalesContract/description-by-poid?poids=${poids}`);
+            if (!descriptionResponse.ok) throw new Error("Failed to fetch item description");
+            const descriptionData = await descriptionResponse.json();
+
+            // Fetch brand data
+            const brandResponse = await fetch(`https://localhost:44347/api/SalesContract/brands-by-poids?poids=${poids}`);
+            if (!brandResponse.ok) throw new Error("Failed to fetch brand data");
+            const brandData = await brandResponse.json();
+
+            // Format and set form values
+            const formattedBrand = Array.isArray(brandData)
+                ? brandData.join(", ")
+                : brandData || "";
+
+            setValue("ItemDes", Array.isArray(descriptionData) ? descriptionData.join(", ") : " ");
+            setValue("Brand", formattedBrand);
+
+        } catch (error) {
+            console.error("Error during fetch:", error.message);
+        }
+    }, [selectedRows, setValue]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            await Promise.all([fetchPOData()]);
+            setLoading(false);
+        };
+        fetchData();
+    }, [fetchPOData]);
+
+
     useEffect(() => {
 
         let latestRow = null;
@@ -615,8 +626,9 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
         }
     }, [selectedRows, setValue]);
 
-    console.log("Selected Rows:", values?.bankID);
-    console.log(values)
+    useEffect(() => {
+        console.log("selectedRows updated:", selectedRows);
+    }, [selectedRows]);
 
     // Handle Pagination
     const handlePageChange = (event, value) => setCurrentPage(value);
@@ -625,20 +637,22 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
     const paginatedData = dataList.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
 
-    useEffect(() => {
-        const updatedRows = selectedRows.map((row) => ({
-            ...row,
-            markupPerPc: row.itemPrice ? (Number(row.itemPrice) - Number(row.vendorPrice || row.itemPrice)) : 0,
-            contractValue: row.poQuantity ? (Number(row.poQuantity) * Number(row.itemPrice || 0)) : 0,
-        }));
-        console.log("markup", updatedRows)
-        // Only update if the new state is different from the current state
-        setSelectedRows(prevRows => {
-            const isSame = JSON.stringify(prevRows) === JSON.stringify(updatedRows);
-            return isSame ? prevRows : updatedRows;
-        });
-        // eslint-disable-next-line 
-    }, [selectedRows]);
+    // useEffect(() => {
+    //     const updatedRows = selectedRows.map((row) => ({
+    //         ...row,
+    //         markupPerPc: row.itemPrice ? (Number(row.itemPrice) - Number(row.vendorPrice || row.itemPrice)) : 0,
+    //         contractValue: row.poQuantity ? (Number(row.poQuantity) * Number(row.itemPrice || 0)) : 0,
+    //     }));
+    //     console.log("markup", updatedRows)
+    //     // Only update if the new state is different from the current state
+    //     setSelectedRows(prevRows => {
+    //         const isSame = JSON.stringify(prevRows) === JSON.stringify(updatedRows);
+    //         return isSame ? prevRows : updatedRows;
+    //     });
+    //     // eslint-disable-next-line 
+    // }, [selectedRows]);
+
+    console.log("selectedRows", selectedRows)
 
     useEffect(() => {
         const totalQty = selectedRows.reduce((sum, row) => sum + (row.quantity || 0), 0);
@@ -705,487 +719,489 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
             settotalcommpc(selectedBooking.commissionInPercent || 0);
         }
     }, [selectedBooking]);
-
+    useEffect(() => {
+        if (selectedBooking) {
+            //  setLoading(true); // Enable loader
+            setTimeout(() => {
+                methods.reset(defaultValues); // Reset form with fetched values
+                setLoading(false); // Disable loader when data is ready
+            }, 3000); // Simulating API delay (replace with actual API call)
+        }
+    }, [selectedBooking, defaultValues, methods]);
     // console.log(currencies.find((x) => x.bankID === JSON.stringify(selectedBooking.bankID)))
     return (
         <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+            {loading ? (
+                // Show Loader while data is being fetched
+                <LoadingScreen sx={{ height: { xs: 200, md: 300 } }} />
+            ) :
+                <FormProvider methods={methods} onSubmit={onSubmit}>
 
 
-            {/* <Box
-                display="flex"
-                justifyContent="space-between"
-            >
-                <CustomBreadcrumbs
-                    heading="Sales Contract Information"
-                    links={[
-                        { name: "Home", href: paths.dashboard.root },
-                        { name: "Sales Contract", href: paths.dashboard.SalesContract.root },
-                        { name: "Add", },
-                    ]}
-                    sx={{ mb: { xs: 3, md: 5 } }}
-                />
+                    <div>
+                        <Card sx={{ mt: 3, p: 2 }}>
+                            <Typography variant="h5" sx={{ mb: 3 }}>
 
-            </Box> */}
-
-            <FormProvider methods={methods} onSubmit={onSubmit}>
-
-
-                <div>
-                    <Card sx={{ mt: 3, p: 2 }}>
-                        <Typography variant="h5" sx={{ mb: 3 }}>
-
-                            Sales Contract Information
-                        </Typography>
-                        <Box
-                            rowGap={3}
-                            columnGap={2}
-                            display="grid"
-                            gridTemplateColumns={{
-                                xs: "repeat(1, 1fr)",
-                                sm: "repeat(1, 1fr)",
-                                md: "repeat(3, 1fr)", // 3 items per row
-                            }}
-                            sx={{ mb: 3 }}
-                        >
-                            {/* Booking Reference No */}
-                            {[1, 24, 4].includes(userData.roleID) && (
-                                <>
-                                    <RHFTextField name="SalesContractNo" label="Sales Contract No" InputLabelProps={{ shrink: true }} />
-
-                                    <Controller
-                                        name="IssuingDate"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <DatePicker
-                                                label="Issuing Date"
-                                                format="dd/MM/yyyy"
-                                                value={field.value}
-                                                onChange={(newValue) => field.onChange(newValue)}
-                                                renderInput={(params) => <TextField {...params} />}
-                                            />
-                                        )}
-                                    />
-                                </>
-                            )}
-
-
-                            <Controller
-                                name="ApplyDate"
-                                control={control}
-
-                                render={({ field }) => (
-                                    <DatePicker
-                                        label="Apply Date"
-                                        format="dd/MM/yyyy"
-                                        value={field.value}
-                                        onChange={(newValue) => field.onChange(newValue)}
-                                        renderInput={(params) => <TextField {...params} />}
-                                    />
-                                )}
-                            />
-                            <RHFAutocomplete
-                                name="customer"
-                                label="Customer Name"
-                                options={customerData}
-                                getOptionLabel={(option) => option?.customerName || ""}
-                                fullWidth
-                                value={customerData?.find((x) => x.customerID === values?.customer?.customerID) || null}
-
-                            />
-
-
-
-                            <RHFAutocomplete
-                                name="supplier"
-                                label="Supplier"
-                                options={SupplierData}
-                                getOptionLabel={(option) => option?.venderName || ""}
-                                value={SupplierData?.find((x) => x.venderLibraryID === values?.supplier?.venderLibraryID) || null}
-
-                                fullWidth
-
-                            />
-
-
-                        </Box>
-                    </Card>
-
-                </div>
-
-                <Card sx={{ mt: 3, p: 2 }}>
-
-                    <Box>
-                        <Box
-                            display="flex"
-                            flexWrap="wrap"
-                            justifyContent="space-between"
-                        >
-                            <Typography variant="h5" sx={{ mb: 1 }}>
-                                Product Specific Information
+                                Sales Contract Information
                             </Typography>
-
-                            {/* Add Item Details Button */}
                             <Box
                                 rowGap={3}
                                 columnGap={2}
-                                display="flex"
-                                flexWrap="wrap"
-                                justifyContent="space-between"
-
+                                display="grid"
+                                gridTemplateColumns={{
+                                    xs: "repeat(1, 1fr)",
+                                    sm: "repeat(1, 1fr)",
+                                    md: "repeat(3, 1fr)", // 3 items per row
+                                }}
+                                sx={{ mb: 3 }}
                             >
-
-                                <Button variant="contained" color="primary" onClick={handleOpen}>
-                                    Add Item Details
-                                </Button>
-                            </Box>
-                        </Box>
-
-
-                        {/* Popup Dialog */}
-                        <Dialog open={open} onClose={handleClose} fullWidth maxWidth="lg">
-                            <DialogTitle>Select Item Details</DialogTitle>
-                            <DialogContent>
-                                <TextField
-                                    label="PO No (optional)"
-                                    fullWidth
-                                    value={PONO}
-                                    onChange={(e) => setPONO(e.target.value)}
-                                    margin="dense"
+                                {/* Booking Reference No */}
+                                <RHFTextField
+                                    name="SalesContractNo"
+                                    label="Sales Contract No"
+                                    InputLabelProps={{ shrink: true }}
+                                    disabled={!([1, 24, 4].includes(userData[0].roleID))}
                                 />
 
-                                <Stack direction="row" justifyContent="flex-end" spacing={2} sx={{ mt: 2 }}>
-                                    <LoadingButton
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={handleGetData}
-                                        loading={loading}
-                                        sx={{ mt: 2 }}
-                                    >
-                                        Get Data
-                                    </LoadingButton>
-
-                                </Stack>
-
-
-                                {/* Data Table Inside Dialog */}
-                                {dataList.length > 0 && (
-                                    <TableContainer component={Paper} sx={{ mt: 3, maxHeight: 400 }}>
-                                        <Scrollbar>
-                                            <Table stickyHeader>
-                                                <TableHead>
-                                                    <TableRow>
-                                                        <TableCell sx={{ minWidth: 100 }} >Select</TableCell>
-                                                        <TableCell sx={{ minWidth: 100 }}>Style No</TableCell>
-                                                        <TableCell sx={{ minWidth: 100 }}>Article</TableCell>
-                                                        <TableCell sx={{ minWidth: 100 }}>PONO</TableCell>
-
-                                                        <TableCell sx={{ minWidth: 100 }}>Shipment Date</TableCell>
-                                                        <TableCell sx={{ minWidth: 100 }}>Quantity</TableCell>
-                                                        <TableCell sx={{ minWidth: 100 }}>Unit Price</TableCell>
-                                                        <TableCell sx={{ minWidth: 100 }}>Total Amount</TableCell>
-                                                        <TableCell sx={{ minWidth: 100 }}>Currency</TableCell>
-                                                        <TableCell sx={{ minWidth: 100 }}>Customer FOB</TableCell>
-                                                        <TableCell sx={{ minWidth: 100 }}>Buyer Commission (%)</TableCell>
-                                                        <TableCell sx={{ minWidth: 100 }}>Vendor Commission (%)</TableCell>
-                                                        <TableCell sx={{ minWidth: 100 }}>Mark-Up Per Pc.</TableCell>
-                                                        <TableCell sx={{ minWidth: 100 }}>Style Description</TableCell>
-                                                        <TableCell sx={{ minWidth: 100 }}>Certifications</TableCell>
-
-                                                    </TableRow>
-                                                </TableHead>
-                                                <TableBody>
-                                                    {paginatedData.map((row, index) => {
-                                                        const rowId = getRowId(row);
-                                                        return (
-                                                            <TableRow key={index}>
-                                                                <TableCell>
-                                                                    <Checkbox
-                                                                        checked={selectedRows.some(selected => getRowId(selected) === rowId)}
-                                                                        onChange={() => handleSelectRow(row)}
-                                                                    />
-                                                                </TableCell>
-                                                                <TableCell>{row.styleNo}</TableCell>
-                                                                <TableCell>{row.article}</TableCell>
-                                                                <TableCell>{row.pono}</TableCell>
-                                                                <TableCell>{formatDateToDDMMYYYY(row.cusShipDate)}</TableCell>
-                                                                <TableCell>{row.quantity}</TableCell>
-                                                                <TableCell>{row.rate}</TableCell>
-                                                                <TableCell>{row.totalAmount}</TableCell>
-                                                                <TableCell>{row.currency}</TableCell>
-
-                                                                <TableCell>{row.newRate}</TableCell>
-                                                                <TableCell>{row.commission}</TableCell>
-
-                                                                <TableCell>{row.vendorCommission}</TableCell>
-                                                                <TableCell>{row.styleMarkUpPerPc}</TableCell>
-
-                                                                <TableCell>{row.styleDescription}</TableCell>
-                                                                <TableCell>{row.certifications}</TableCell>
-                                                            </TableRow>
-                                                        );
-                                                    })}
-                                                </TableBody>
-                                            </Table>
-                                        </Scrollbar>
-                                    </TableContainer>
-                                )}
-
-                                {/* Pagination */}
-                                {dataList.length > rowsPerPage && (
-                                    <Box display="flex" justifyContent="center" sx={{ mt: 2 }}>
-                                        <Pagination
-                                            count={Math.ceil(dataList.length / rowsPerPage)}
-                                            page={currentPage}
-                                            onChange={handlePageChange}
-                                            color="primary"
+                                <Controller
+                                    name="IssuingDate"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <DatePicker
+                                            label="Issuing Date"
+                                            format="dd/MM/yyyy"
+                                            value={field.value ? field.value : ""}
+                                            onChange={(newValue) => field.onChange(newValue)}
+                                            disabled={!([1, 24, 4].includes(userData[0].roleID))}
+                                            renderInput={(params) => <TextField {...params} />}
                                         />
-                                    </Box>
-                                )}
-                            </DialogContent>
-                            <DialogActions>
-                                <Button onClick={handleClose} >
-                                    Close
-                                </Button>
-                            </DialogActions>
-                        </Dialog>
+                                    )}
+                                />
 
 
-                        {/* Selected Items Displayed Outside */}
-                        {selectedRows.length > 0 && (
-                            <TableContainer component={Paper} sx={{ mt: 3 }}>
-                                <Typography variant="h6" sx={{ p: 2 }}>
-                                    Selected Items
-                                </Typography>
 
-                                <Table>
-                                    <Scrollbar>
-                                        <TableHead>
-                                            <TableRow>
+                                <Controller
+                                    name="ApplyDate"
+                                    control={control}
 
+                                    render={({ field }) => (
+                                        <DatePicker
+                                            label="Apply Date"
+                                            format="dd/MM/yyyy"
+                                            value={field.value}
+                                            onChange={(newValue) => field.onChange(newValue)}
+                                            renderInput={(params) => <TextField {...params} />}
+                                        />
+                                    )}
+                                />
+                                <RHFAutocomplete
+                                    name="customer"
+                                    label="Customer Name"
+                                    options={customerData}
+                                    getOptionLabel={(option) => option?.customerName || ""}
+                                    fullWidth
+                                    value={customerData?.find((x) => x.customerID === values?.customer?.customerID) || null}
 
-                                                <TableCell sx={{ minWidth: 100 }}>Style No</TableCell>
-                                                <TableCell sx={{ minWidth: 100 }}>Article</TableCell>
-                                                <TableCell sx={{ minWidth: 100 }}>PONO</TableCell>
-
-                                                <TableCell sx={{ minWidth: 100 }}>Shipment Date</TableCell>
-                                                <TableCell sx={{ minWidth: 100 }}>Quantity</TableCell>
-                                                <TableCell sx={{ minWidth: 100 }}>Unit Price</TableCell>
-                                                <TableCell sx={{ minWidth: 100 }}>Total Amount</TableCell>
-                                                <TableCell sx={{ minWidth: 100 }}>Currency</TableCell>
-                                                <TableCell sx={{ minWidth: 100 }}>Customer FOB</TableCell>
-                                                <TableCell sx={{ minWidth: 100 }}>Buyer Commission (%)</TableCell>
-                                                <TableCell sx={{ minWidth: 100 }}>Vendor Commission (%)</TableCell>
-                                                <TableCell sx={{ minWidth: 100 }}>Mark-Up Per Pc.</TableCell>
-                                                <TableCell  >Remove</TableCell>
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {selectedRows.map((row, index) => (
-                                                <TableRow key={index}>
-
-                                                    <TableCell>{row.styleNo}</TableCell>
-                                                    <TableCell>{row.article}</TableCell>
-                                                    <TableCell>{row.pono}</TableCell>
-                                                    <TableCell>{formatDateToDDMMYYYY(row.cusShipDate)}</TableCell>
-                                                    <TableCell>{row.quantity}</TableCell>
-                                                    <TableCell>{row.rate}</TableCell>
-                                                    <TableCell>{row.totalAmount}</TableCell>
-                                                    <TableCell>{row.currency}</TableCell>
-
-                                                    <TableCell>{row.newRate}</TableCell>
-                                                    <TableCell>{row.commission}</TableCell>
-
-                                                    <TableCell>{row.vendorCommission}</TableCell>
-                                                    <TableCell>{row.styleMarkUpPerPc || row.markUpPerPc}</TableCell>
-                                                    <TableCell>
-                                                        <Checkbox
-                                                            checked={selectedRows.some(selected => getRowId(selected) === row)}
-                                                            onChange={() => handleSelectRow(row)}
-                                                        />
-                                                    </TableCell>
-                                                </TableRow>
-
-                                            ))}
-                                        </TableBody>
-                                    </Scrollbar>
-
-                                </Table>
-
-                                <Box
-                                    sx={{
-                                        display: "grid",
-                                        gridTemplateColumns: {
-                                            xs: "repeat(1, 1fr)",  // 2 columns on extra small screens
-                                            sm: "repeat(2, 1fr)",  // 3 columns on small screens
-                                            md: "repeat(3, 1fr)",  // 4 columns on medium and up
-                                        },
-                                        gap: 3,
-                                        mt: 2,
-                                        p: 2,
-                                    }}
-                                >
-                                    <TextField
-                                        label="Total Quantity"
-                                        type="number"
-                                        value={totalQuantity}
-                                        disabled
-                                    />
-                                    <TextField
-                                        label="Total Value"
-                                        type="number"
-                                        value={totalAmount}
-                                        disabled
-                                    />
-                                    <TextField
-                                        label="Synergies Total Commission"
-                                        type="number"
-                                        value={selectedBooking.synergiesTotalCommission || totalcomm}
-                                        disabled
-                                    />
-                                    <TextField
-                                        label="Total Commission / Pc"
-                                        type="number"
-                                        value={selectedBooking.commissionInPercent ||totalcommpc}
-                                        disabled
-                                    />
-
-                                    <Controller
-                                        name="ExpiryDate"
-                                        control={control}
-
-                                        render={({ field }) => (
-                                            <DatePicker
-                                                label="Expiry Date"
-                                                format="dd/MM/yyyy"
-                                                value={field.value}
-                                                onChange={(newValue) => field.onChange(newValue)}
-                                                renderInput={(params) => <TextField {...params} />}
-                                            />
-                                        )}
-                                    />
-
-                                    <RHFTextField name="Brand" label="Brands" InputLabelProps={{ shrink: true }} multiline sx={{ mb: 2 }} rows={3} />
-                                </Box>
-
-                            </TableContainer>
-                        )}
-                    </Box>
+                                />
 
 
-                </Card>
 
-                <Card sx={{ mt: 3, p: 2 }}>
-                    <div>
+                                <RHFAutocomplete
+                                    name="supplier"
+                                    label="Supplier"
+                                    options={SupplierData}
+                                    getOptionLabel={(option) => option?.venderName || ""}
+                                    value={SupplierData?.find((x) => x.venderLibraryID === values?.supplier?.venderLibraryID) || null}
 
-                        <Typography variant="h5" sx={{ mb: 3 }}>
-                            Commerical Section
-                        </Typography>
-                        <Box
-                            rowGap={3}
-                            columnGap={2}
-                            display="grid"
-                            gridTemplateColumns={{
-                                xs: 'repeat(1, 1fr)',  // Single column on extra small screens
-                                sm: 'repeat(1, 1fr)',  // Single column on small screens
-                                md: 'repeat(3, 1fr)',  // Three columns on medium screens and above
-                            }}
-                            sx={{
-                                mb: 3,
-                            }}
-                        >
+                                    fullWidth
 
-                            <RHFTextField name="TermOfSales" label="Term of Sales" defaultValue="FOB Bangladesh" />
-                            <RHFTextField name="GoodsOrigin" label="Goods Origin" defaultValue="Bangladesh" />
-                            <RHFTextField name="TransShipment" label="Trans Shipment" defaultValue="Allowed" />
-                            <RHFTextField name="PartShipment" label="Part Shipment" defaultValue="Allowed" />
-                            <RHFTextField name="PaymentType" label="Payment type" defaultValue="" />
-                            <RHFTextField name="PaymentMode" label=" Payment mode" defaultValue="" />
-                            <RHFTextField name="CertificateOfOrigin" label="Certificate of Origin / GSP Form A" defaultValue="Will be provided" />
-                            <RHFTextField name="ToleranceInDays" label="Tolerance [%]" defaultValue="" />
-                            <RHFTextField name="Packing" label="Packing" defaultValue="Export Standard" />
-                            <RHFTextField name="ShipmentFrom" label="Shipment From" defaultValue="Any port of Bangladesh" InputLabelProps={{ shrink: true }} />
-                            <RHFTextField name="Items" label="Items" InputLabelProps={{ shrink: true }} />
-                            <RHFAutocomplete
-                                name="FabricSource"
-                                label="FabricSource"
-                                options={fbsrc}
-                                getOptionLabel={(option) => option}
-                                onChange={(event, newValue) => setFbsrc(newValue)}
-                                value={fbsrc?.find((x) => x === Fbsrc) || null}
-                                fullWidth
-                            />
-                            <Controller
-                                name="ExpectedLCDate"
-                                control={control}
-                                render={({ field, fieldState: { error } }) => (
-                                    <DatePicker
-                                        label="Expected Date"
-                                        format="dd/MM/yyyy"
-                                        value={field.value}
-                                        onChange={(newValue) => field.onChange(newValue)}
-                                        renderInput={(params) => <TextField {...params} />}
-                                        slotProps={{
-                                            textField: {
-                                                fullWidth: true,
-                                                error: !!error,
-                                                helperText: error?.message,
-                                            },
-                                        }}
-                                    />
-                                )}
-                            />
-                            <RHFTextField name="PortOfDestination" label="Port" InputLabelProps={{ shrink: true }} />
-                            <RHFTextField name="ReasonOfDelayInLC" label="Reason Of Delay in LC" InputLabelProps={{ shrink: true }} />
+                                />
 
-                            <RHFAutocomplete
-                                name="SalesContractType"
-                                label="Sales contract type"
-                                options={salesType}
-                                getOptionLabel={(option) => option}
-                               
-                                value={salesType?.find((x) => x === selectedLCOption) || null}
-                                fullWidth
-                            />
 
-                            <RHFAutocomplete
-                                name="ApplicantBankID"
-                                label="Bank"
-                                options={currencies}
-                                getOptionLabel={(option) => option?.bankName || ""}
-                                onChange={(_, newValue) => {
-                                    setValue("ApplicantBankID", newValue?.bankID || 0, { shouldValidate: true });
-                                    setValue("ApplicantBankRequired", newValue?.bankID !== 0, { shouldValidate: true }); // 👈 sets boolean
-                                }}
-                                fullWidth
-                            />
-
-                            <Controller
-                                name="ApplicantBankRequired"
-                                control={control}
-                                defaultValue={false}
-                                render={({ field }) => <input type="hidden" {...field} />}
-                            />
-
-                            <RHFTextField name="ItemDes" label="Item description" InputLabelProps={{ shrink: true }} multiline sx={{ mb: 2 }} rows={3} />
-                            <RHFTextField name="LogisticComments" label="Logistics Comments" InputLabelProps={{ shrink: true }} multiline sx={{ mb: 2 }} rows={3} />
-                            <RHFTextField name="MerComm" label="Merchandiser Comments" InputLabelProps={{ shrink: true }} multiline sx={{ mb: 2 }} rows={3} />
-
-                        </Box>
+                            </Box>
+                        </Card>
 
                     </div>
 
-                </Card>
+                    <Card sx={{ mt: 3, p: 2 }}>
+
+                        <Box>
+                            <Box
+                                display="flex"
+                                flexWrap="wrap"
+                                justifyContent="space-between"
+                            >
+                                <Typography variant="h5" sx={{ mb: 1 }}>
+                                    Product Specific Information
+                                </Typography>
+
+                                {/* Add Item Details Button */}
+                                <Box
+                                    rowGap={3}
+                                    columnGap={2}
+                                    display="flex"
+                                    flexWrap="wrap"
+                                    justifyContent="space-between"
+
+                                >
+
+                                    <Button variant="contained" color="primary" onClick={handleOpen}>
+                                        Add Item Details
+                                    </Button>
+                                </Box>
+                            </Box>
+
+
+                            {/* Popup Dialog */}
+                            <Dialog open={open} onClose={handleClose} fullWidth maxWidth="lg">
+                                <DialogTitle>Select Item Details</DialogTitle>
+                                <DialogContent>
+                                    <TextField
+                                        label="PO No (optional)"
+                                        fullWidth
+                                        value={PONO}
+                                        onChange={(e) => setPONO(e.target.value)}
+                                        margin="dense"
+                                    />
+
+                                    <Stack direction="row" justifyContent="flex-end" spacing={2} sx={{ mt: 2 }}>
+                                        <LoadingButton
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={handleGetData}
+                                            loading={loading}
+                                            sx={{ mt: 2 }}
+                                        >
+                                            Get Data
+                                        </LoadingButton>
+
+                                    </Stack>
+
+
+                                    {/* Data Table Inside Dialog */}
+                                    {dataList.length > 0 && (
+                                        <TableContainer component={Paper} sx={{ mt: 3, maxHeight: 400 }}>
+                                            <Scrollbar>
+                                                <Table stickyHeader>
+                                                    <TableHead>
+                                                        <TableRow>
+                                                            <TableCell sx={{ minWidth: 100 }} >Select</TableCell>
+                                                            <TableCell sx={{ minWidth: 100 }}>Style No</TableCell>
+                                                            <TableCell sx={{ minWidth: 100 }}>Article</TableCell>
+                                                            <TableCell sx={{ minWidth: 100 }}>PO. No</TableCell>
+
+                                                            <TableCell sx={{ minWidth: 100 }}>Shipment Date</TableCell>
+                                                            <TableCell sx={{ minWidth: 100 }}>Quantity</TableCell>
+                                                            <TableCell sx={{ minWidth: 100 }}>Unit Price</TableCell>
+                                                            <TableCell sx={{ minWidth: 100 }}>Total Amount</TableCell>
+                                                            <TableCell sx={{ minWidth: 100 }}>Currency</TableCell>
+                                                            <TableCell sx={{ minWidth: 100 }}>Customer FOB</TableCell>
+                                                            <TableCell sx={{ minWidth: 100 }}>Buyer Commission (%)</TableCell>
+                                                            <TableCell sx={{ minWidth: 100 }}>Vendor Commission (%)</TableCell>
+                                                            <TableCell sx={{ minWidth: 100 }}>Mark-Up Per Pc.</TableCell>
+                                                            <TableCell sx={{ minWidth: 100 }}>Style Description</TableCell>
+                                                            <TableCell sx={{ minWidth: 100 }}>Certifications</TableCell>
+
+                                                        </TableRow>
+                                                    </TableHead>
+                                                    <TableBody>
+                                                        {paginatedData.map((row, index) => {
+                                                            const rowId = getRowId(row);
+                                                            return (
+                                                                <TableRow key={index}>
+                                                                    <TableCell>
+                                                                        <Checkbox
+                                                                            checked={selectedRows.some(selected => getRowId(selected) === rowId)}
+                                                                            onChange={() => handleSelectRow(row)}
+                                                                        />
+                                                                    </TableCell>
+                                                                    <TableCell>{row.styleNo}</TableCell>
+                                                                    <TableCell>{row.article}</TableCell>
+                                                                    <TableCell>{row.pono}</TableCell>
+                                                                    <TableCell>{row.cusShipDate}</TableCell>
+                                                                    <TableCell>{row.quantity}</TableCell>
+                                                                    <TableCell>{row.rate}</TableCell>
+                                                                    <TableCell>{row.totalAmount}</TableCell>
+                                                                    <TableCell>{row.currency}</TableCell>
+
+                                                                    <TableCell>{row.newRate}</TableCell>
+                                                                    <TableCell>{row.commission}</TableCell>
+
+                                                                    <TableCell>{row.vendorCommission}</TableCell>
+                                                                    <TableCell>{row.styleMarkUpPerPc}</TableCell>
+
+                                                                    <TableCell>{row.styleDescription}</TableCell>
+                                                                    <TableCell>{row.certifications}</TableCell>
+                                                                </TableRow>
+                                                            );
+                                                        })}
+                                                    </TableBody>
+                                                </Table>
+                                            </Scrollbar>
+                                        </TableContainer>
+                                    )}
+
+                                    {/* Pagination */}
+                                    {dataList.length > rowsPerPage && (
+                                        <Box display="flex" justifyContent="center" sx={{ mt: 2 }}>
+                                            <Pagination
+                                                count={Math.ceil(dataList.length / rowsPerPage)}
+                                                page={currentPage}
+                                                onChange={handlePageChange}
+                                                color="primary"
+                                            />
+                                        </Box>
+                                    )}
+                                </DialogContent>
+                                <DialogActions>
+                                    <Button onClick={handleClose} >
+                                        Close
+                                    </Button>
+                                </DialogActions>
+                            </Dialog>
+
+
+                            {/* Selected Items Displayed Outside */}
+                            {selectedRows.length > 0 && (
+                                <TableContainer component={Paper} sx={{ mt: 3 }}>
+                                    <Typography variant="h6" sx={{ p: 2 }}>
+                                        Selected Items
+                                    </Typography>
+
+                                    <Table>
+                                        <Scrollbar>
+                                            <TableHead>
+                                                <TableRow>
+
+
+                                                    <TableCell sx={{ minWidth: 100 }}>Style No</TableCell>
+                                                    <TableCell sx={{ minWidth: 100 }}>Article</TableCell>
+                                                    <TableCell sx={{ minWidth: 100 }}>PO. No</TableCell>
+
+                                                    <TableCell sx={{ minWidth: 100 }}>Shipment Date</TableCell>
+                                                    <TableCell sx={{ minWidth: 100 }}>Quantity</TableCell>
+                                                    <TableCell sx={{ minWidth: 80 }}>Unit Price</TableCell>
+                                                    <TableCell sx={{ minWidth: 100 }}>Total Amount</TableCell>
+                                                    <TableCell sx={{ minWidth: 100 }}>Currency</TableCell>
+                                                    <TableCell sx={{ minWidth: 100 }}>Customer FOB</TableCell>
+                                                    <TableCell sx={{ minWidth: 100 }}>Buyer Commission (%)</TableCell>
+                                                    <TableCell sx={{ minWidth: 100 }}>Vendor Commission (%)</TableCell>
+                                                    <TableCell sx={{ minWidth: 100 }}>Mark-Up Per Pc.</TableCell>
+                                                    <TableCell sx={{ minWidth: 100 }} >Remove</TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {selectedRows.map((row, index) => (
+                                                    <TableRow key={index}>
+
+                                                        <TableCell>{row.styleNo}</TableCell>
+                                                        <TableCell>{row.article}</TableCell>
+                                                        <TableCell>{row.pono}</TableCell>
+                                                        <TableCell>
+                                                            {row.cusShipDate?.includes("T")
+                                                                ? formatDateToDDMMYYYY(row.cusShipDate)
+                                                                : row.cusShipDate}
+                                                        </TableCell>
+                                                        <TableCell>{row.quantity}</TableCell>
+                                                        <TableCell>{row.rate}</TableCell>
+                                                        <TableCell>{row.totalAmount}</TableCell>
+                                                        <TableCell>{row.currency}</TableCell>
+
+                                                        <TableCell>{row.newRate}</TableCell>
+                                                        <TableCell>{row.commission}</TableCell>
+
+                                                        <TableCell>{row.vendorCommission}</TableCell>
+                                                        <TableCell>{row.styleMarkUpPerPc || row.markUpPerPc}</TableCell>
+                                                        <TableCell>
+                                                            <Checkbox
+                                                                checked={selectedRows.some(selected => getRowId(selected) === row)}
+                                                                onChange={() => handleSelectRow(row)}
+                                                            />
+                                                        </TableCell>
+                                                    </TableRow>
+
+                                                ))}
+                                            </TableBody>
+                                        </Scrollbar>
+
+                                    </Table>
+
+                                    <Box
+                                        sx={{
+                                            display: "grid",
+                                            gridTemplateColumns: {
+                                                xs: "repeat(1, 1fr)",  // 2 columns on extra small screens
+                                                sm: "repeat(2, 1fr)",  // 3 columns on small screens
+                                                md: "repeat(3, 1fr)",  // 4 columns on medium and up
+                                            },
+                                            gap: 3,
+                                            mt: 2,
+                                            p: 2,
+                                        }}
+                                    >
+                                        <TextField
+                                            label="Total Quantity"
+                                            type="number"
+                                            value={totalQuantity}
+                                            disabled
+                                        />
+                                        <TextField
+                                            label="Total Value"
+                                            type="number"
+                                            value={totalAmount}
+                                            disabled
+                                        />
+                                        <TextField
+                                            label="Synergies Total Commission"
+                                            type="number"
+                                            value={selectedBooking.synergiesTotalCommission || totalcomm}
+                                            disabled
+                                        />
+                                        <TextField
+                                            label="Total Commission / Pc"
+                                            type="number"
+                                            value={selectedBooking.commissionInPercent || totalcommpc}
+                                            disabled
+                                        />
+
+                                        <Controller
+                                            name="ExpiryDate"
+                                            control={control}
+
+                                            render={({ field }) => (
+                                                <DatePicker
+                                                    label="Expiry Date"
+                                                    format="dd/MM/yyyy"
+                                                    value={field.value}
+                                                    onChange={(newValue) => field.onChange(newValue)}
+                                                    renderInput={(params) => <TextField {...params} />}
+                                                />
+                                            )}
+                                        />
+
+                                        <RHFTextField name="Brand" label="Brands" InputLabelProps={{ shrink: true }} multiline sx={{ mb: 2 }} rows={3} disabled />
+                                    </Box>
+
+                                </TableContainer>
+                            )}
+                        </Box>
+
+
+                    </Card>
+
+                    <Card sx={{ mt: 3, p: 2 }}>
+                        <div>
+
+                            <Typography variant="h5" sx={{ mb: 3 }}>
+                                Commerical Section
+                            </Typography>
+                            <Box
+                                rowGap={3}
+                                columnGap={2}
+                                display="grid"
+                                gridTemplateColumns={{
+                                    xs: 'repeat(1, 1fr)',  // Single column on extra small screens
+                                    sm: 'repeat(1, 1fr)',  // Single column on small screens
+                                    md: 'repeat(3, 1fr)',  // Three columns on medium screens and above
+                                }}
+                                sx={{
+                                    mb: 3,
+                                }}
+                            >
+
+                                <RHFTextField name="TermOfSales" label="Term of Sales" defaultValue="FOB BANGLADESH" disabled />
+                                <RHFTextField name="GoodsOrigin" label="Goods Origin" defaultValue="BANGLADESH" disabled />
+                                <RHFTextField name="TransShipment" label="Trans Shipment" defaultValue="ALLOWED" disabled />
+                                <RHFTextField name="PartShipment" label="Part Shipment" defaultValue="ALLOWED" disabled />
+                                <RHFTextField name="PaymentType" label="Payment type" defaultValue="" disabled />
+                                <RHFTextField name="PaymentMode" label=" Payment mode" defaultValue="" disabled />
+                                <RHFTextField name="CertificateOfOrigin" label="Certificate of Origin / GSP Form A" defaultValue="WILL BE PROVIDED" disabled />
+                                <RHFTextField name="ToleranceInDays" label="Tolerance [%]" defaultValue="" disabled />
+                                <RHFTextField name="Packing" label="Packing" defaultValue="EXPORT STANDARD" disabled />
+                                <RHFTextField name="ShipmentFrom" label="Shipment From" defaultValue="ANY PORT OF BANGLADESH" InputLabelProps={{ shrink: true }} disabled />
+                                <RHFTextField name="Items" label="Items" InputLabelProps={{ shrink: true }} disabled />
+                                <RHFAutocomplete
+                                    name="FabricSource"
+                                    label="FabricSource"
+                                    options={fbsrc}
+                                    getOptionLabel={(option) => option}
+                                    onChange={(event, newValue) => setFbsrc(newValue)}
+                                    value={fbsrc?.find((x) => x === Fbsrc) || null}
+                                    fullWidth
+                                />
+                                <Controller
+                                    name="ExpectedLCDate"
+                                    control={control}
+                                    render={({ field, fieldState: { error } }) => (
+                                        <DatePicker
+                                            label="Expected Date"
+                                            format="dd/MM/yyyy"
+                                            value={field.value}
+                                            onChange={(newValue) => field.onChange(newValue)}
+                                            renderInput={(params) => <TextField {...params} />}
+                                            slotProps={{
+                                                textField: {
+                                                    fullWidth: true,
+                                                    error: !!error,
+                                                    helperText: error?.message,
+                                                },
+                                            }}
+                                        />
+                                    )}
+                                />
+                                <RHFTextField name="PortOfDestination" label="Port of Destination" InputLabelProps={{ shrink: true }} disabled={!([1, 24, 4].includes(userData[0].roleID))} />
+                                <RHFTextField name="ReasonOfDelayInLC" label="Reason Of Delay in LC" InputLabelProps={{ shrink: true }} />
+
+                                <RHFAutocomplete
+                                    name="SalesContractType"
+                                    label="Sales contract type"
+                                    options={salesType}
+                                    getOptionLabel={(option) => option}
+
+                                    value={salesType?.find((x) => x === selectedLCOption) || null}
+                                    fullWidth
+                                />
+
+                                <RHFAutocomplete
+                                    name="ApplicantBankID"
+                                    label="Bank"
+                                    options={currencies}
+                                    getOptionLabel={(option) => option?.bankName || ""}
+                                    value={currencies?.find((x) => x.bankID === values?.ApplicantBankID?.bankID) || null}
+                                    onChange={(_, newValue) => {
+                                        setValue("ApplicantBankID", newValue?.bankID || 0, { shouldValidate: true });
+                                        setValue("ApplicantBankRequired", newValue?.bankID !== 0, { shouldValidate: true }); // 👈 sets boolean
+                                    }}
+                                    fullWidth
+                                />
+
+                                <Controller
+                                    name="ApplicantBankRequired"
+                                    control={control}
+                                    defaultValue={false}
+                                    render={({ field }) => <input type="hidden" {...field} />}
+                                />
+
+                                <RHFTextField name="ItemDes" label="Item description" InputLabelProps={{ shrink: true }} multiline sx={{ mb: 2 }} rows={3} disabled />
+                                <RHFTextField name="LogisticComments" label="Logistics Comments" InputLabelProps={{ shrink: true }} multiline sx={{ mb: 2 }} rows={3} disabled={!([1, 24, 4].includes(userData[0].roleID))} />
+                                <RHFTextField name="MerComm" label="Merchandiser Comments" InputLabelProps={{ shrink: true }} multiline sx={{ mb: 2 }} rows={3} />
+
+                            </Box>
+
+                        </div>
+
+                    </Card>
 
 
 
-                <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
-                    <Button type="submit" variant="contained" color="primary">
-                        Submit
-                    </Button>
-                </Box>
+                    <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
+                        <Button type="submit" variant="contained" color="primary">
+                            Submit
+                        </Button>
+                    </Box>
 
-            </FormProvider>
-
+                </FormProvider>
+            }
         </Container >
     );
 };

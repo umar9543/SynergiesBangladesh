@@ -18,30 +18,31 @@ export default function SalesContractEditView({ urlData }) {
 
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [styles, setStyles] = useState([])
-console.log(urlData)
+    console.log(urlData)
     useEffect(() => {
         axios.get(`https://localhost:44347/api/SalesContract/${urlData?.id}`)
-        .then(response => {
-            const formatedData = {
-                ...response.data,
-                ApplyDate: new Date(response.data.applyDate),
-                expectedLCDate: new Date(response.data.expectedLCDate),
-                IssuingDate:new Date(response.data.salesContractDate)
-            }
-            setSelectedBooking(formatedData)
-        })
+            .then(response => {
+                const formatedData = {
+                    ...response.data,
+                    ApplyDate: new Date(response.data.applyDate),
+                    expectedLCDate: new Date(response.data.expectedLCDate),
+                    IssuingDate: response.data.salesContractDate==="1970-01-01T00:00:00"? null : new Date(response.data.salesContractDate),
+                }
+                console.log('format',response.data)
+                setSelectedBooking(formatedData)
+            })
             .catch(error => console.error("Error fetching customers:", error));
-       
+
     }, [urlData?.id]);
 
-    useEffect(()=>{
+    useEffect(() => {
         axios.get(`https://localhost:44347/api/SalesContract/get-detail/${urlData?.id}`)
-        .then(response => 
-            setStyles(response.data)
-        )
-        .catch(error => console.error("Error fetching data:", error));
-    },[urlData?.id])
-console.log(selectedBooking)
+            .then(response =>
+                setStyles(response.data)
+            )
+            .catch(error => console.error("Error fetching data:", error));
+    }, [urlData?.id])
+    console.log(selectedBooking)
     const settings = useSettingsContext();
     return (
         <Container maxWidth={settings.themeStretch ? false : 'lg'}>

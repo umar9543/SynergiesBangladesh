@@ -19,7 +19,7 @@ import { useAuthContext } from 'src/auth/hooks';
 import { varHover } from 'src/components/animate';
 import { useSnackbar } from 'src/components/snackbar';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
-import { decrypt, encrypt } from 'src/api/encryption';
+import {  decryptObjectKeys } from 'src/api/encryption';
 
 // ----------------------------------------------------------------------
 
@@ -47,7 +47,11 @@ export default function AccountPopover() {
 
   const popover = usePopover();
 
-  const userData = JSON.parse(localStorage.getItem('UserData'));
+  const userData = decryptObjectKeys(
+    Array.isArray(JSON.parse(localStorage.getItem('UserData')))
+      ? JSON.parse(localStorage.getItem('UserData'))
+      : [JSON.parse(localStorage.getItem('UserData'))]  // Wrap the object in an array
+  );
 
   const handleLogout = async () => {
     try {
@@ -92,7 +96,7 @@ export default function AccountPopover() {
             border: (theme) => `solid 2px ${theme.palette.background.default}`,
           }}
         >
-          {userData.userName.charAt(0).toUpperCase()}
+          {userData[0].userName.charAt(0).toUpperCase()}
         </Avatar>
       </IconButton>
 

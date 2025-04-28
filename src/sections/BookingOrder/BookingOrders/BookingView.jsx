@@ -13,10 +13,16 @@ import {
 
 import Scrollbar from "src/components/scrollbar";
 import { Get } from "src/api/apibasemethods";
+import { decryptObjectKeys } from "src/api/encryption";
 // import BookingOrder from "./BookingOrder";
 
 const BookingView = () => {
-    const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
+    const userData = useMemo(() => {
+           const parsedData = JSON.parse(localStorage.getItem('UserData'));
+           return decryptObjectKeys(
+             Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
+           );
+         }, []);
     const userdata = JSON.parse(localStorage.getItem("UserData"))
 
     const [data, setData] = useState([]);
@@ -28,12 +34,12 @@ const BookingView = () => {
     const [showForm, setShowForm] = useState(false);
 
     useEffect(() => {
-        axios.get(`https://ssblapi.m5groupe.online:6449/api/BookingPurchase/api/booking?userId=${userData.userID}&division=${userData.ecpDivistion}`)
+        axios.get(`https://ssblapi.m5groupe.online:6449/api/BookingPurchase/api/booking?userId=${userData[0].userID}&division=${userData[0].ecpDivistion}`)
             .then((response) => {
                 setData(response.data);
             })
             .catch((error) => console.error("Error fetching data:", error));
-    }, [userData.userID, userData.ecpDivistion]);
+    }, [userData]);
     console.log("view", data)
     const handleSelectRow = (row) => {
         setSelectedRows((prevSelected) =>

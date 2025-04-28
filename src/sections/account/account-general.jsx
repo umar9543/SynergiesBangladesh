@@ -20,14 +20,19 @@ import FormProvider, {
   RHFUploadAvatar,
   RHFAutocomplete,
 } from 'src/components/hook-form';
-import { decrypt } from 'src/api/encryption';
+import { decrypt, decryptObjectKeys } from 'src/api/encryption';
 
 // ----------------------------------------------------------------------
 
 export default function AccountGeneral() {
   const { enqueueSnackbar } = useSnackbar();
 
-  const userData = JSON.parse(localStorage.getItem('UserData'));
+ const userData = useMemo(() => {
+    const parsedData = JSON.parse(localStorage.getItem('UserData'));
+    return decryptObjectKeys(
+      Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
+    );
+  }, []);
   const [updatedUserData, setUpdatedUserData] = useState({});
 
   const UpdateUserSchema = Yup.object().shape({
@@ -39,7 +44,7 @@ export default function AccountGeneral() {
 
   const defaultValues = useMemo(
     () => ({
-      userName: userData ? (userData.userName) : '',
+      userName: userData ? (userData[0].userName) : '',
       // EmailAddress: userData ? decrypt(userData.EmailAddress) : '',
       // ImagePath: userData ? decrypt(userData.ImagePath) : null,
       // Designation: userData ? decrypt(userData.Designation) : '',

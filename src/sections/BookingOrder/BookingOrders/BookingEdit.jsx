@@ -48,7 +48,12 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
 
 
 
-    const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
+   const userData = useMemo(() => {
+      const parsedData = JSON.parse(localStorage.getItem('UserData'));
+      return decryptObjectKeys(
+        Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
+      );
+    }, []);
     const certificationOptions = ["Yes", "No"];
     const [selectedCertification, setSelectedCertification] = useState(selectedBooking?.b_isCertifications ? 1 : 0 || null);
     const [certificationValues, setCertificationValues] = useState({
@@ -318,7 +323,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
 
 
     useEffect(() => {
-        Get(`https://ssblapi.m5groupe.online:6449/api/Merchants?userID=${userData.userID}&roleID=${userData.roleID}`)
+        Get(`https://ssblapi.m5groupe.online:6449/api/Merchants?userID=${userData[0].userID}&roleID=${userData[0].roleID}`)
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
 
@@ -331,7 +336,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
                 setMerchantData(formattedData);
             })
             .catch(error => console.error("Error fetching merchants:", error));
-    }, [userData.userID, userData.roleID]);
+    }, [userData]);
     console.log(MerchantData);
 
     useEffect(() => {
@@ -393,13 +398,13 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
 
     useEffect(() => {
 
-        Get(`https://ssblapi.m5groupe.online:6449/api/businessmanagers?ecpDivision=${userData.ecpDivistion}`)
+        Get(`https://ssblapi.m5groupe.online:6449/api/businessmanagers?ecpDivision=${userData[0].ecpDivistion}`)
             .then(response => {
 
                 setBusinsessManager(response.data)
             })
             .catch(error => console.error("Error fetching customers:", error));
-    }, [userData.ecpDivistion]);
+    }, [userData]);
     useEffect(() => {
         Get("https://ssblapi.m5groupe.online:6449/api/shipmentmode")
             .then(response => {

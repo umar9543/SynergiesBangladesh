@@ -49,7 +49,12 @@ function generateCode(userArray) {
 export default function BookingCreateForm() {
   const router = useRouter();
   const { enqueueSnackbar } = useSnackbar();
-  const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
+ const userData = useMemo(() => {
+    const parsedData = JSON.parse(localStorage.getItem('UserData'));
+    return decryptObjectKeys(
+      Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
+    );
+  }, []);
 
   // Date In SQL format
   const formatDate = (date) => {

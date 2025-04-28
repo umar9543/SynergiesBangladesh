@@ -67,22 +67,30 @@ export default function JwtLoginView() {
 
   const onSubmit = handleSubmit(async () => {
     try {
+      // Encrypt and URL-encode the UserCode and Password
       const encryptedUserCode = encodeURIComponent(encrypt(loginInfo.UserCode));
       const encryptedPassword = encodeURIComponent(encrypt(loginInfo.Password));
-      // const encryptedAgencyName = encodeURIComponent(encrypt(loginInfo.Agency));
-
-      const response = await Post(`https://ssblapi.m5groupe.online:6449/api/Login`, {
-        userCode: loginInfo.UserCode,
-        password: loginInfo.Password
+  
+      // Construct the API URL with encrypted parameters
+      const apiUrl = `https://localhost:44347/api/Login?usercode=${encryptedUserCode}&password=${encryptedPassword}`;
+  
+      // Make the GET request
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
-
-      if (response.status === 200) {
+  
+      // Check if the response is successful
+      if (response.ok) {
+        const data = await response.json();
         const loginTime = new Date().getTime();
-        localStorage.setItem('UserData', JSON.stringify(response.data));
+        localStorage.setItem('UserData', JSON.stringify(data));
         localStorage.setItem('loginTime', loginTime);
         router.push(returnTo || PATH_AFTER_LOGIN);
       } else {
-        setErrorMsg('Incorrect or Password');
+        setErrorMsg('Incorrect UserCode or Password');
       }
     } catch (error) {
       setErrorMsg('An error occurred. Please try again.');
@@ -90,7 +98,6 @@ export default function JwtLoginView() {
       reset();
     }
   });
-
   const renderHead = (
     <Stack spacing={2} sx={{ mb: 5 }}>
       <Typography variant="h4">Sign in to Synergies Bangladesh</Typography>

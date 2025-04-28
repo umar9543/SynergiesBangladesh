@@ -1,23 +1,17 @@
 import { useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router';
-import { decrypt, decryptObjectKeys } from 'src/api/encryption';
+import { decrypt } from 'src/api/encryption';
 import { paths } from 'src/routes/paths';
-import SalesContractAdd from 'src/sections/SalesContract/SalesPages/SalesContractAdd';
-
+import { BookingListView } from 'src/sections/SalesContract/view';
 
 
 
 // ----------------------------------------------------------------------
 
-export default function SalesContractAddPage() {
+export default function SalesContractViewPage() {
   const navigate = useNavigate()
-  const userData = useMemo(() => {
-     const parsedData = JSON.parse(localStorage.getItem('UserData'));
-     return decryptObjectKeys(
-       Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
-     );
-   }, []);
+  const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
 
   // useEffect(() => {
   //   if (userData.roleID !== '1') {
@@ -30,7 +24,7 @@ export default function SalesContractAddPage() {
         <title>Sales Contract</title>
       </Helmet>
 
-      <SalesContractAdd/>
+      <BookingListView/>
     </>
   );
 }

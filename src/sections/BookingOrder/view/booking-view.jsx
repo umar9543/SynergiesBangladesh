@@ -33,7 +33,7 @@ import {
   TablePaginationCustom,
 } from 'src/components/table';
 
-import { decrypt, encrypt } from 'src/api/encryption';
+import { decrypt, decryptObjectKeys, encrypt } from 'src/api/encryption';
 
 import BookingTableRow from '../booking-table-row';
 import BookingTableToolbar from '../booking-toolbar';
@@ -66,9 +66,12 @@ const defaultFilters = {
 
 export default function BookingListView() {
   const navigate = useNavigate();
-
-  const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
-
+  const userData = decryptObjectKeys(
+    Array.isArray(JSON.parse(localStorage.getItem('UserData')))
+      ? JSON.parse(localStorage.getItem('UserData'))
+      : [JSON.parse(localStorage.getItem('UserData'))]  // Wrap the object in an array
+  );
+  
   // Table component Ref
   const tableComponentRef = useRef();
 
@@ -76,31 +79,31 @@ export default function BookingListView() {
   const [tableData, setTableData] = useState([]);
   const [isLoading, setLoading] = useState(true);
 
-  const decryptObjectKeys = (data, keysToExclude = []) => {
-    const decryptedData = data.map((item) => {
-      const decryptedItem = {};
-      Object.keys(item).forEach((key) => {
-        if (!keysToExclude.includes(key)) {
-          decryptedItem[key] = decrypt(item[key]);
-        } else {
-          decryptedItem[key] = item[key];
-        }
-      });
-      return decryptedItem;
-    });
-    return decryptedData;
-  };
+  // const decryptObjectKeys = (data, keysToExclude = []) => {
+  //   const decryptedData = data.map((item) => {
+  //     const decryptedItem = {};
+  //     Object.keys(item).forEach((key) => {
+  //       if (!keysToExclude.includes(key)) {
+  //         decryptedItem[key] = decrypt(item[key]);
+  //       } else {
+  //         decryptedItem[key] = item[key];
+  //       }
+  //     });
+  //     return decryptedItem;
+  //   });
+  //   return decryptedData;
+  // };
 
   const FetchBookingData = useCallback(async () => {
     try {
-      const response = await Get(`https://ssblapi.m5groupe.online:6449/api/BookingPurchase/api/booking?userId=${userData.userID}&division=${userData.ecpDivistion}`);
+      const response = await Get(`https://ssblapi.m5groupe.online:6449/api/BookingPurchase/api/booking?userId=${userData[0].userID}&division=${userData[0].ecpDivistion}`);
       // const keysToExclude = ['EmployeeImage'];
       // const decryptedData = decryptObjectKeys(response.data.ServiceRes, keysToExclude);
       setTableData(response.data);
     } catch (error) {
       console.log(error);
     }
-  }, [userData.userID, userData.ecpDivistion]);
+  }, [userData]);
 
   useEffect(() => {
     const fetchData = async () => {

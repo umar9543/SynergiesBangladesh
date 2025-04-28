@@ -33,26 +33,27 @@ import {
   TablePaginationCustom,
 } from 'src/components/table';
 
-import { decrypt, encrypt } from 'src/api/encryption';
-
+import { decrypt, decryptObjectKeys, encrypt } from 'src/api/encryption';
+import { Paper } from '@mui/material';
 import BookingTableRow from '../booking-table-row';
 import BookingTableToolbar from '../booking-toolbar';
 import BookingTableFiltersResult from '../booking-filters-result';
 
+
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'salesContractNo', label: 'Sales Contract No', minWidth: 160 },
-  { id: 'customerName', label: 'Customer', minWidth: 140 },
-   { id: 'supplierName', label: 'Supplier', minWidth: 140 },
-  { id: 'salesContractDate', label: 'Sales Contract Date', minWidth: 170 },
-  { id: 'expiryDate', label: 'Expiry Date', minWidth: 140,align: 'center' },
-  { id: 'managerApproval', label: 'Manager Approval', minWidth: 160,align: 'center' },
+  { id: 'salesContractNo', label: 'Sales Contract No', minWidth: 140 },
+  { id: 'customerName', label: 'Customer', minWidth: 160 },
+  { id: 'supplierName', label: 'Supplier', minWidth: 160 },
+  { id: 'salesContractDate', label:'Sales Contract Date', minWidth: 165 },
+  { id: 'expiryDate', label: 'Expiry Date', minWidth: 130, align: 'center' },
+  { id: 'managerApproval', label: 'Manager Approval', minWidth: 120, align: 'center' },
 
-  { id: 'hodApproval', label: 'HOD Approval', minWidth: 160,align: 'center' },
-  { id: 'managmentApproval', label: 'Managment Approval', minWidth: 190,align: 'center' },
+  { id: 'hodApproval', label: 'HOD Approval', minWidth: 120, align: 'center' },
+  { id: 'managmentApproval', label: 'Managment Approval', minWidth: 120, align: 'center' },
 
-  { id: '', label: 'Actions', width: 88, align: 'center' },
+  { id: '', label: 'Actions', minWidth: 90, align: 'center' },
 ];
 
 const defaultFilters = {
@@ -66,8 +67,13 @@ const defaultFilters = {
 export default function BookingListView() {
   const navigate = useNavigate();
 
-  const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
-console.log(userData,"userData")
+   const userData = useMemo(() => {
+            const parsedData = JSON.parse(localStorage.getItem('UserData'));
+            return decryptObjectKeys(
+              Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
+            );
+          }, []);
+  console.log(userData, "userData")
   // Table component Ref
   const tableComponentRef = useRef();
 
@@ -75,31 +81,34 @@ console.log(userData,"userData")
   const [tableData, setTableData] = useState([]);
   const [isLoading, setLoading] = useState(true);
 
-  const decryptObjectKeys = (data, keysToExclude = []) => {
-    const decryptedData = data.map((item) => {
-      const decryptedItem = {};
-      Object.keys(item).forEach((key) => {
-        if (!keysToExclude.includes(key)) {
-          decryptedItem[key] = decrypt(item[key]);
-        } else {
-          decryptedItem[key] = item[key];
-        }
-      });
-      return decryptedItem;
-    });
-    return decryptedData;
-  };
+  // const decryptObjectKeys = (data, keysToExclude = []) => {
+  //   const decryptedData = data.map((item) => {
+  //     const decryptedItem = {};
+  //     Object.keys(item).forEach((key) => {
+  //       if (!keysToExclude.includes(key)) {
+  //         decryptedItem[key] = decrypt(item[key]);
+  //       } else {
+  //         decryptedItem[key] = item[key];
+  //       }
+  //     });
+  //     return decryptedItem;
+  //   });
+  //   return decryptedData;
+  // };
 
   const FetchSalesContractData = useCallback(async () => {
     try {
-      const response = await Get(`https://localhost:44347/api/SalesContract/GetSalesContracts?roleId=${userData.roleID}&userId=${userData.userID}`);
-      // const keysToExclude = ['EmployeeImage'];
-      // const decryptedData = decryptObjectKeys(response.data.ServiceRes, keysToExclude);
-      setTableData(response.data);
+      const response = await Get(`https://localhost:44347/api/SalesContract/GetSalesContracts?roleId=${userData[0].roleID}&userId=${userData[0].userID}`);
+      const formatedData = response.data.map(item => ({
+        ...item,
+         salesContractDate: item.salesContractDate=== "01/01/1970"? null : item.salesContractDate,
+      }));
+      
+      setTableData(formatedData);
     } catch (error) {
       console.log(error);
     }
-  }, [userData.userID, userData.roleID]);
+  }, [userData]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -155,22 +164,22 @@ console.log(userData,"userData")
 
   // Edit Functions
   const [selectedBooking, setSelectedBooking] = useState(null);
-  const moveToEditForm = async(e) => {
+  const moveToEditForm = async (e) => {
     // try {
     //   const response = await fetch(`https://localhost:44347/api/BookingPurchase/${e}`);
     //   const bookingData = await response.json();
 
     //   if (response.ok) {
     //       setSelectedBooking(bookingData); // Set data for editing
-         
-          navigate(paths.dashboard.SalesContract.edit(e)); // Show form on edit click
-  //     } else {
-  //         console.error("Failed to fetch booking data.");
-  //     }
-  // } catch (error) {
-  //     console.error("Error fetching booking data:", error);
-  // }
-    
+
+    navigate(paths.dashboard.SalesContract.edit(e)); // Show form on edit click
+    //     } else {
+    //         console.error("Failed to fetch booking data.");
+    //     }
+    // } catch (error) {
+    //     console.error("Error fetching booking data:", error);
+    // }
+
   };
 
   // const DeleteDetailTableRow = async (id) => {
@@ -201,7 +210,7 @@ console.log(userData,"userData")
       {isLoading ? (
         renderLoading
       ) : (
-        <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+        <Container maxWidth={settings.themeStretch ? false : 'lg'} >
           <CustomBreadcrumbs
             heading="Sales Contract"
             links={[{ name: 'Home', href: paths.dashboard.root }, { name: 'Sales Contract' }]}
@@ -221,7 +230,7 @@ console.log(userData,"userData")
             }}
           />
 
-          <Card>
+          <Card sx={{ mt: -3 }}>
             <BookingTableToolbar
               filters={filters}
               onFilters={handleFilters}
@@ -241,7 +250,12 @@ console.log(userData,"userData")
               />
             )}
 
-            <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
+            <TableContainer component={Paper}
+              sx={{
+              
+                overflowX: 'auto',
+                overflowY: 'auto',
+              }}>
               <TableSelectedAction dense={table.dense} rowCount={dataFiltered.length} />
 
               <Scrollbar>
@@ -270,7 +284,7 @@ console.log(userData,"userData")
                           row={row}
                           selected={table.selected.includes(row?.poid)}
                           onEditRow={() => moveToEditForm(row?.salesContractID)}
-                          // onDeleteRow={() => DeleteDetailTableRow(row?.YarnDatabaseID)}
+                        // onDeleteRow={() => DeleteDetailTableRow(row?.YarnDatabaseID)}
                         />
                       ))}
 
@@ -322,10 +336,10 @@ function applyFilter({ inputData, comparator, filters }) {
       (yarn) =>
         yarn?.customerName.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
         yarn?.supplierName.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        yarn?.salesContractNo.toLowerCase().indexOf(name.toLowerCase()) !== -1 
-        // yarn?.styleNo.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        // yarn?.vendor.toLowerCase().indexOf(name.toLowerCase()) !== -1
-       
+        yarn?.salesContractNo.toLowerCase().indexOf(name.toLowerCase()) !== -1
+      // yarn?.styleNo.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+      // yarn?.vendor.toLowerCase().indexOf(name.toLowerCase()) !== -1
+
     );
   }
 

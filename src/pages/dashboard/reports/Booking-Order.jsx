@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router';
-import { decrypt } from 'src/api/encryption';
+import { decrypt, decryptObjectKeys } from 'src/api/encryption';
 import { paths } from 'src/routes/paths';
 import BookingOrder from 'src/sections/BookingOrder/BookingOrders/BookingOrder';
 
@@ -11,7 +11,12 @@ import BookingOrder from 'src/sections/BookingOrder/BookingOrders/BookingOrder';
 
 export default function PurchaseOrderReportPage() {
   const navigate = useNavigate()
-  const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
+   const userData = useMemo(() => {
+      const parsedData = JSON.parse(localStorage.getItem('UserData'));
+      return decryptObjectKeys(
+        Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
+      );
+    }, []);
 
   // useEffect(() => {
   //   if (userData.roleID !== '1') {
