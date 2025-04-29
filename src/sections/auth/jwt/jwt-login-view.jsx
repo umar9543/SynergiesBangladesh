@@ -72,7 +72,7 @@ export default function JwtLoginView() {
       const encryptedPassword = encodeURIComponent(encrypt(loginInfo.Password));
   
       // Construct the API URL with encrypted parameters
-      const apiUrl = `https://localhost:44347/api/Login?usercode=${encryptedUserCode}&password=${encryptedPassword}`;
+      const apiUrl = `https://ssblapi.m5groupe.online:6449/api/Login?usercode=${encryptedUserCode}&password=${encryptedPassword}`;
   
       // Make the GET request
       const response = await fetch(apiUrl, {
