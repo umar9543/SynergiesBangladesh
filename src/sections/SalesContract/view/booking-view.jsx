@@ -98,7 +98,7 @@ export default function BookingListView() {
 
   const FetchSalesContractData = useCallback(async () => {
     try {
-      const response = await Get(`https://localhost:44347/api/SalesContract/GetSalesContracts?roleId=${userData[0].roleID}&userId=${userData[0].userID}`);
+      const response = await Get(`https://ssblapi.m5groupe.online:6449/api/SalesContract/GetSalesContracts?roleId=${userData[0].roleID}&userId=${userData[0].userID}`);
       const formatedData = response.data.map(item => ({
         ...item,
          salesContractDate: item.salesContractDate=== "01/01/1970"? null : item.salesContractDate,
@@ -166,7 +166,7 @@ export default function BookingListView() {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const moveToEditForm = async (e) => {
     // try {
-    //   const response = await fetch(`https://localhost:44347/api/BookingPurchase/${e}`);
+    //   const response = await fetch(`https://ssblapi.m5groupe.online:6449/api/BookingPurchase/${e}`);
     //   const bookingData = await response.json();
 
     //   if (response.ok) {

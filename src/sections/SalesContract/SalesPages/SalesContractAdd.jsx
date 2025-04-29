@@ -250,7 +250,7 @@ const SalesContractAdd = () => {
 
 
     useEffect(() => {
-        Get("https://localhost:44347/api/Bank")
+        Get("https://ssblapi.m5groupe.online:6449/api/Bank")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
                 setCurrencies(decryptedData)
@@ -263,7 +263,7 @@ const SalesContractAdd = () => {
 
     const InsertMstData = async (DataToInsert) => {
         try {
-            const res = await Post(`https://localhost:44347/api/SalesContract/add-master`, DataToInsert);
+            const res = await Post(`https://ssblapi.m5groupe.online:6449/api/SalesContract/add-master`, DataToInsert);
 
             if (res.status === 200) {
                 const { contractID } = res.data;
@@ -304,7 +304,7 @@ const SalesContractAdd = () => {
         }));
 
         try {
-            const res = await Post(`https://localhost:44347/api/SalesContract/add-detail`, detailPayload);
+            const res = await Post(`https://ssblapi.m5groupe.online:6449/api/SalesContract/add-detail`, detailPayload);
             return res.status === 200; // ✅ Return true if success
         } catch (error) {
             console.error(`Error creating detail data:`, error);
@@ -417,10 +417,10 @@ const SalesContractAdd = () => {
             console.log(poid, 'poid')
             try {
                 // Fetch the item description using the POID
-                const descriptionResponse = await fetch(`https://localhost:44347/api/SalesContract/description-by-poid?poids=${poid}`);
+                const descriptionResponse = await fetch(`https://ssblapi.m5groupe.online:6449/api/SalesContract/description-by-poid?poids=${poid}`);
                 if (!descriptionResponse.ok) throw new Error("Failed to fetch item description");
 
-                const brandResp = await fetch(`https://localhost:44347/api/SalesContract/brands-by-poids?poids=${poid}`);
+                const brandResp = await fetch(`https://ssblapi.m5groupe.online:6449/api/SalesContract/brands-by-poids?poids=${poid}`);
                 if (!brandResp.ok) throw new Error("Failed to fetch brand data");
 
                 // Parse JSON responses
@@ -457,11 +457,11 @@ const SalesContractAdd = () => {
             let apiUrl;
 
             if (PONO?.trim()) {
-                apiUrl = `https://localhost:44347/api/poreport?customerId=${customerId}&supplierId=${supplierId}&${PONO}`;
+                apiUrl = `https://ssblapi.m5groupe.online:6449/api/poreport?customerId=${customerId}&supplierId=${supplierId}&${PONO}`;
 
             }
             else {
-                apiUrl = `https://localhost:44347/api/poreport?customerId=${customerId}&supplierId=${supplierId}`;
+                apiUrl = `https://ssblapi.m5groupe.online:6449/api/poreport?customerId=${customerId}&supplierId=${supplierId}`;
 
             }
 
@@ -525,7 +525,7 @@ const SalesContractAdd = () => {
         setValue("ExpiryDate", newExpiryDate);
         if (latestRow?.poid) {
             try {
-                const response = await fetch(`https://localhost:44347/api/SalesContract/payment-by-poid?poid=${latestRow.poid}`);
+                const response = await fetch(`https://ssblapi.m5groupe.online:6449/api/SalesContract/payment-by-poid?poid=${latestRow.poid}`);
                 if (!response.ok) throw new Error("Failed to fetch payment data");
 
                 const paymentData = await response.json();

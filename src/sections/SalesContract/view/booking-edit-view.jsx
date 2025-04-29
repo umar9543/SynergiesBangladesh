@@ -20,7 +20,7 @@ export default function SalesContractEditView({ urlData }) {
     const [styles, setStyles] = useState([])
     console.log(urlData)
     useEffect(() => {
-        axios.get(`https://localhost:44347/api/SalesContract/${urlData?.id}`)
+        axios.get(`https://ssblapi.m5groupe.online:6449/api/SalesContract/${urlData?.id}`)
             .then(response => {
                 const formatedData = {
                     ...response.data,
@@ -36,7 +36,7 @@ export default function SalesContractEditView({ urlData }) {
     }, [urlData?.id]);
 
     useEffect(() => {
-        axios.get(`https://localhost:44347/api/SalesContract/get-detail/${urlData?.id}`)
+        axios.get(`https://ssblapi.m5groupe.online:6449/api/SalesContract/get-detail/${urlData?.id}`)
             .then(response =>
                 setStyles(response.data)
             )

@@ -288,7 +288,7 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
 
 
     useEffect(() => {
-        Get("https://localhost:44347/api/Bank")
+        Get("https://ssblapi.m5groupe.online:6449/api/Bank")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
 
@@ -316,7 +316,7 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
 
             if (selectedBooking) {
                 // ✅ Send JSON for UPDATE API (PUT)
-                res = await axios.put(`https://localhost:44347/api/SalesContract/edit-master/${urlData?.id}`, DataToInsert, {
+                res = await axios.put(`https://ssblapi.m5groupe.online:6449/api/SalesContract/edit-master/${urlData?.id}`, DataToInsert, {
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -328,7 +328,7 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
             else {
 
 
-                res = await Post(`https://localhost:44347/api/SalesContract/add-master`, DataToInsert);
+                res = await Post(`https://ssblapi.m5groupe.online:6449/api/SalesContract/add-master`, DataToInsert);
 
                 if (res.status === 200) {
                     const { contractID } = res.data;
@@ -371,7 +371,7 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
         }));
 
         try {
-            const res = await Post(`https://localhost:44347/api/SalesContract/add-detail`, detailPayload);
+            const res = await Post(`https://ssblapi.m5groupe.online:6449/api/SalesContract/add-detail`, detailPayload);
             return res.status === 200; // ✅ Return true if success
         } catch (error) {
             console.error(`Error creating detail data:`, error);
@@ -498,7 +498,7 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
             const customerId = values.customer.customerID;
             const supplierId = values.supplier.venderLibraryID;
 
-            let apiUrl = `https://localhost:44347/api/poreport?customerId=${customerId}&supplierId=${supplierId}`;
+            let apiUrl = `https://ssblapi.m5groupe.online:6449/api/poreport?customerId=${customerId}&supplierId=${supplierId}`;
 
             if (PONO?.trim()) {
                 apiUrl += `&pono=${encodeURIComponent(PONO.trim())}`;
@@ -548,12 +548,12 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
 
         try {
             // Fetch item descriptions
-            const descriptionResponse = await fetch(`https://localhost:44347/api/SalesContract/description-by-poid?poids=${poids}`);
+            const descriptionResponse = await fetch(`https://ssblapi.m5groupe.online:6449/api/SalesContract/description-by-poid?poids=${poids}`);
             if (!descriptionResponse.ok) throw new Error("Failed to fetch item description");
             const descriptionData = await descriptionResponse.json();
 
             // Fetch brand data
-            const brandResponse = await fetch(`https://localhost:44347/api/SalesContract/brands-by-poids?poids=${poids}`);
+            const brandResponse = await fetch(`https://ssblapi.m5groupe.online:6449/api/SalesContract/brands-by-poids?poids=${poids}`);
             if (!brandResponse.ok) throw new Error("Failed to fetch brand data");
             const brandData = await brandResponse.json();
 
@@ -601,7 +601,7 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
             setValue("ExpiryDate", newExpiryDate);
             if (latestRow.poid) {
                 console.log("Poid:", latestRow.poid);
-                fetch(`https://localhost:44347/api/SalesContract/payment-by-poid?poid=${latestRow.poid}`)
+                fetch(`https://ssblapi.m5groupe.online:6449/api/SalesContract/payment-by-poid?poid=${latestRow.poid}`)
                     .then(res => res.json())
                     .then(res => {
                         console.log(res);
