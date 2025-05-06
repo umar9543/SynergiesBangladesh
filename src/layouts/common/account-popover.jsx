@@ -19,7 +19,7 @@ import { useAuthContext } from 'src/auth/hooks';
 import { varHover } from 'src/components/animate';
 import { useSnackbar } from 'src/components/snackbar';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
-import {  decryptObjectKeys } from 'src/api/encryption';
+import { decrypt, encrypt } from 'src/api/encryption';
 
 // ----------------------------------------------------------------------
 
@@ -47,12 +47,11 @@ export default function AccountPopover() {
 
   const popover = usePopover();
 
-  const userData = decryptObjectKeys(
-    Array.isArray(JSON.parse(localStorage.getItem('UserData')))
-      ? JSON.parse(localStorage.getItem('UserData'))
-      : [JSON.parse(localStorage.getItem('UserData'))]  // Wrap the object in an array
-  );
-
+  const userData = JSON.parse(localStorage.getItem('UserData'));
+    const UserID=decrypt(userData.ServiceRes.UserID);
+    const RoleID=decrypt(userData.ServiceRes.RoleID);
+    const ECPDivistion=decrypt(userData.ServiceRes.ECPDivistion);
+console.log(UserID,RoleID,ECPDivistion)
   const handleLogout = async () => {
     try {
       await localStorage.removeItem('UserData');
@@ -88,27 +87,27 @@ export default function AccountPopover() {
         }}
       >
         <Avatar
-          src={userData.ImagePath}
-          alt={userData.userName}
+          src={decrypt(userData.ServiceRes?.ImagePath)}
+          alt={decrypt(userData.ServiceRes.UserName)}
           sx={{
             width: 36,
             height: 36,
             border: (theme) => `solid 2px ${theme.palette.background.default}`,
           }}
         >
-          {userData[0].userName.charAt(0).toUpperCase()}
+          {decrypt(userData.ServiceRes.UserName)?.charAt(0)?.toUpperCase() || 'i'}
         </Avatar>
       </IconButton>
 
       <CustomPopover open={popover.open} onClose={popover.onClose} sx={{ width: 200, p: 0 }}>
         <Box sx={{ p: 2, pb: 1.5 }}>
           <Typography variant="subtitle2" noWrap>
-            {userData.userName}
+            {decrypt(userData.ServiceRes.UserName)}
           </Typography>
 
-          {/* <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-            {userData?.EmailAddress)}
-          </Typography> */}
+          <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
+            {decrypt(userData?.ServiceRes.EmailAddress)}
+          </Typography>
         </Box>
 
         <Divider sx={{ borderStyle: 'dashed' }} />

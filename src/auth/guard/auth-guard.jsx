@@ -5,9 +5,8 @@ import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
 import { SplashScreen } from 'src/components/loading-screen';
-import { decryptObjectKeys } from 'src/api/encryption';
-import { useAuthContext } from '../hooks';
 
+import { useAuthContext } from '../hooks';
 
 // ----------------------------------------------------------------------
 
@@ -84,13 +83,7 @@ function Container({ children }) {
   const [checked, setChecked] = useState(false);
 
   const check = useCallback(() => {
-    const userData = decryptObjectKeys(
-      Array.isArray(JSON.parse(localStorage.getItem('UserData')))
-        ? JSON.parse(localStorage.getItem('UserData'))
-        : [JSON.parse(localStorage.getItem('UserData'))]  // Wrap the object in an array
-    );
-    
-    
+    const userData = localStorage.getItem('UserData');
     if (!userData) {
       const searchParams = new URLSearchParams({
         returnTo: window.location.pathname,

@@ -1,5 +1,5 @@
 import isEqual from 'lodash/isEqual';
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import {useRef, useMemo, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 
 import Card from '@mui/material/Card';
@@ -13,7 +13,7 @@ import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 import { useBoolean } from 'src/hooks/use-boolean';
-import { Delete, Get } from 'src/api/apibasemethods';
+import {  Get } from 'src/api/apibasemethods';
 
 import { LoadingScreen } from 'src/components/loading-screen';
 
@@ -33,7 +33,7 @@ import {
   TablePaginationCustom,
 } from 'src/components/table';
 
-import { decrypt, decryptObjectKeys, encrypt } from 'src/api/encryption';
+import { decrypt } from 'src/api/encryption';
 import { Paper } from '@mui/material';
 import BookingTableRow from '../booking-table-row';
 import BookingTableToolbar from '../booking-toolbar';
@@ -46,7 +46,7 @@ const TABLE_HEAD = [
   { id: 'salesContractNo', label: 'Sales Contract No', minWidth: 140 },
   { id: 'customerName', label: 'Customer', minWidth: 160 },
   { id: 'supplierName', label: 'Supplier', minWidth: 160 },
-  { id: 'salesContractDate', label:'Sales Contract Date', minWidth: 165 },
+  { id: 'salesContractDate', label: 'Sales Contract Date', minWidth: 165 },
   { id: 'expiryDate', label: 'Expiry Date', minWidth: 130, align: 'center' },
   { id: 'managerApproval', label: 'Manager Approval', minWidth: 120, align: 'center' },
 
@@ -67,12 +67,11 @@ const defaultFilters = {
 export default function BookingListView() {
   const navigate = useNavigate();
 
-   const userData = useMemo(() => {
-            const parsedData = JSON.parse(localStorage.getItem('UserData'));
-            return decryptObjectKeys(
-              Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
-            );
-          }, []);
+ 
+  const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
+  const UserID = decrypt(userData.ServiceRes.UserID);
+  const RoleID = decrypt(userData.ServiceRes.RoleID);
+  const ECPDivistion = decrypt(userData.ServiceRes.ECPDivistion);
   console.log(userData, "userData")
   // Table component Ref
   const tableComponentRef = useRef();
@@ -98,17 +97,17 @@ export default function BookingListView() {
 
   const FetchSalesContractData = useCallback(async () => {
     try {
-      const response = await Get(`https://ssblapi.m5groupe.online:6449/api/SalesContract/GetSalesContracts?roleId=${userData[0].roleID}&userId=${userData[0].userID}`);
+      const response = await Get(`https://localhost:44347/api/SalesContract/GetSalesContracts?roleId=${RoleID}&userId=${UserID}`);
       const formatedData = response.data.map(item => ({
         ...item,
-         salesContractDate: item.salesContractDate=== "01/01/1970"? null : item.salesContractDate,
+        salesContractDate: item.salesContractDate === "01/01/1970" ? null : item.salesContractDate,
       }));
-      
+
       setTableData(formatedData);
     } catch (error) {
       console.log(error);
     }
-  }, [userData]);
+  }, [RoleID, UserID]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -252,7 +251,7 @@ export default function BookingListView() {
 
             <TableContainer component={Paper}
               sx={{
-              
+
                 overflowX: 'auto',
                 overflowY: 'auto',
               }}>

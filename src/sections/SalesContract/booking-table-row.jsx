@@ -6,7 +6,7 @@ import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 
 import Iconify from 'src/components/iconify';
-import { decrypt, decryptObjectKeys } from 'src/api/encryption';
+import { decrypt } from 'src/api/encryption';
 import { Button } from '@mui/material';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { useBoolean } from 'src/hooks/use-boolean';
@@ -26,12 +26,10 @@ export default function BookingTableRow({ row, selected, onEditRow, onDeleteRow 
     managmentApproval,
   } = row;
 
-   const userData = useMemo(() => {
-            const parsedData = JSON.parse(localStorage.getItem('UserData'));
-            return decryptObjectKeys(
-              Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
-            );
-          }, []);
+   const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
+   const UserID = decrypt(userData.ServiceRes.UserID);
+   const RoleID = decrypt(userData.ServiceRes.RoleID);
+   const ECPDivistion = decrypt(userData.ServiceRes.ECPDivistion);
   const confirm = useBoolean();
 
   const formatDate = (date) => {

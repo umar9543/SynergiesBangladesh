@@ -13,16 +13,11 @@ import {
 
 import Scrollbar from "src/components/scrollbar";
 import { Get } from "src/api/apibasemethods";
-import { decryptObjectKeys } from "src/api/encryption";
+// import { decryptObjectKeys } from "src/api/encryption";
 // import BookingOrder from "./BookingOrder";
 
 const BookingView = () => {
-    const userData = useMemo(() => {
-             const parsedData = JSON.parse(localStorage.getItem('UserData'));
-             return decryptObjectKeys(
-               Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
-             );
-           }, []);
+     const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
     const userdata = JSON.parse(localStorage.getItem("UserData"))
 
     const [data, setData] = useState([]);

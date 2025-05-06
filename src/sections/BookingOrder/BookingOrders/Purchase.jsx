@@ -26,7 +26,8 @@ import {
 import { LoadingButton } from "@mui/lab";
 import { enqueueSnackbar } from "notistack";
 import Scrollbar from "src/components/scrollbar";
-import { decryptObjectKeys } from "src/api/encryption";
+import { decrypt } from "src/api/encryption";
+
 
 
 const ProductSpecificInfo = ({ setTotalAmount, totalAmount, totalQuantity, setTotalQuantity, cancelQuantity,
@@ -43,7 +44,17 @@ const ProductSpecificInfo = ({ setTotalAmount, totalAmount, totalQuantity, setTo
 
 
     const [selectedCurrency, setSelectedCurrency] = useState(null);
-
+    const decryptObjectKeys = (data) => {
+        const decryptedData = data.map((item) => {
+          const decryptedItem = {};
+          Object.keys(item).forEach((key) => {
+            decryptedItem[key] = decrypt(item[key]);
+          });
+          return decryptedItem;
+        });
+        return decryptedData;
+      };
+    
     // const [totalAmount, settotalAmount] = useState(0);
     // Fetch Currencies from API
 

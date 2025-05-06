@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useParams } from 'react-router';
-import { decrypt, decryptObjectKeys } from 'src/api/encryption';
+import { decrypt } from 'src/api/encryption';
 import { paths } from 'src/routes/paths';
 import { BookingEditView } from 'src/sections/BookingOrder/view';
 // import BookingOrder from 'src/sections/BookingOrders/BookingOrder';
@@ -13,12 +13,7 @@ import { BookingEditView } from 'src/sections/BookingOrder/view';
 export default function BookingOrderEditPage() {
   const navigate = useNavigate()
   const param = useParams();
- const userData = useMemo(() => {
-    const parsedData = JSON.parse(localStorage.getItem('UserData'));
-    return decryptObjectKeys(
-      Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
-    );
-  }, []);
+  const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
 
   // useEffect(() => {
   //   if (userData.roleID !== '1') {

@@ -5,7 +5,7 @@ import { paths } from 'src/routes/paths';
 import { useTranslate } from 'src/locales';
 
 import SvgColor from 'src/components/svg-color';
-import {  decryptObjectKeys } from 'src/api/encryption';
+
 
 // ----------------------------------------------------------------------
 
@@ -49,12 +49,7 @@ const ICONS = {
 
 export function useNavData() {
   const { t } = useTranslate();
-  const userData = useMemo(() => {
-    const parsedData = JSON.parse(localStorage.getItem('UserData'));
-    return decryptObjectKeys(
-      Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
-    );
-  }, []);
+  const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
   
 
   const data = useMemo(

@@ -28,7 +28,7 @@ import FormProvider, {
     RHFAutocomplete,
 } from 'src/components/hook-form';
 import { useSettingsContext } from "src/components/settings";
-import { decryptObjectKeys } from "src/api/encryption";
+import { decrypt } from "src/api/encryption";
 import PropTypes from "prop-types";
 import { LoadingScreen } from "src/components/loading-screen";
 import ProductSpecificInfo from "./Purchase";
@@ -47,13 +47,22 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
     // Example usage
 
 
+  const decryptObjectKeys = (data) => {
+    const decryptedData = data.map((item) => {
+      const decryptedItem = {};
+      Object.keys(item).forEach((key) => {
+        decryptedItem[key] = decrypt(item[key]);
+      });
+      return decryptedItem;
+    });
+    return decryptedData;
+  };
 
-   const userData = useMemo(() => {
-      const parsedData = JSON.parse(localStorage.getItem('UserData'));
-      return decryptObjectKeys(
-        Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
-      );
-    }, []);
+ 
+   const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
+   const UserID=decrypt(userData.ServiceRes.UserID);
+   const RoleID=decrypt(userData.ServiceRes.RoleID);
+   const ECPDivistion=decrypt(userData.ServiceRes.ECPDivistion);
     const certificationOptions = ["Yes", "No"];
     const [selectedCertification, setSelectedCertification] = useState(selectedBooking?.b_isCertifications ? 1 : 0 || null);
     const [certificationValues, setCertificationValues] = useState({
@@ -323,7 +332,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
 
 
     useEffect(() => {
-        Get(`https://ssblapi.m5groupe.online:6449/api/Merchants?userID=${userData[0].userID}&roleID=${userData[0].roleID}`)
+        Get(`https://ssblapi.m5groupe.online:6449/api/Merchants?userID=${UserID}&roleID=${RoleID}`)
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
 
@@ -336,7 +345,7 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
                 setMerchantData(formattedData);
             })
             .catch(error => console.error("Error fetching merchants:", error));
-    }, [userData]);
+    }, [UserID, RoleID]);
     console.log(MerchantData);
 
     useEffect(() => {
@@ -398,13 +407,13 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
 
     useEffect(() => {
 
-        Get(`https://ssblapi.m5groupe.online:6449/api/businessmanagers?ecpDivision=${userData[0].ecpDivistion}`)
+        Get(`https://ssblapi.m5groupe.online:6449/api/businessmanagers?ecpDivision=${ECPDivistion}`)
             .then(response => {
 
                 setBusinsessManager(response.data)
             })
             .catch(error => console.error("Error fetching customers:", error));
-    }, [userData]);
+    }, [ECPDivistion]);
     useEffect(() => {
         Get("https://ssblapi.m5groupe.online:6449/api/shipmentmode")
             .then(response => {

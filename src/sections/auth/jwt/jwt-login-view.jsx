@@ -31,7 +31,9 @@ export default function JwtLoginView() {
 
   const [errorMsg, setErrorMsg] = useState('');
   const [loginInfo, setLoginInfo] = useState({
-    Agency: 'Progression'
+    UserCode: '',
+    Password: '',
+    AgencyName: 'Synergies Bangladesh'
   });
 
   const searchParams = useSearchParams();
@@ -47,11 +49,13 @@ export default function JwtLoginView() {
   const LoginSchema = Yup.object().shape({
     userCode: Yup.string().required('User Code is required'),
     password: Yup.string().required('Password is required'),
+    agency: Yup.string('Agency is required'),
   });
 
   const defaultValues = {
     userCode: '',
     password: '',
+    agency: 'Synergies Bangladesh',
   };
 
   const methods = useForm({
@@ -70,9 +74,10 @@ export default function JwtLoginView() {
       // Encrypt and URL-encode the UserCode and Password
       const encryptedUserCode = encodeURIComponent(encrypt(loginInfo.UserCode));
       const encryptedPassword = encodeURIComponent(encrypt(loginInfo.Password));
+      const encryptedAgency = encodeURIComponent(encrypt(loginInfo.AgencyName));
   
       // Construct the API URL with encrypted parameters
-      const apiUrl = `https://ssblapi.m5groupe.online:6449/api/Login?usercode=${encryptedUserCode}&password=${encryptedPassword}`;
+      const apiUrl = `https://merchantportalssblapi.m5groupe.online:6447/mapi/GetLoginInfo?UserCode=${encryptedUserCode}&Password=${encryptedPassword}&AgencyName=${encryptedAgency}`;
   
       // Make the GET request
       const response = await fetch(apiUrl, {

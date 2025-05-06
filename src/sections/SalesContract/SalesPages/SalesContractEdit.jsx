@@ -43,7 +43,7 @@ import FormProvider, {
 } from 'src/components/hook-form';
 import axios from "axios";
 import PropTypes from "prop-types";
-import { decryptObjectKeys } from "src/api/encryption";
+import { decrypt } from "src/api/encryption";
 import { useSettingsContext } from "src/components/settings";
 import { LoadingScreen } from "src/components/loading-screen";
 
@@ -53,14 +53,25 @@ import { LoadingScreen } from "src/components/loading-screen";
 
 const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
 
+ const decryptObjectKeys = (data, keysToExclude = []) => {
+    const decryptedData = data.map((item) => {
+      const decryptedItem = {};
+      Object.keys(item).forEach((key) => {
+        if (!keysToExclude.includes(key)) {
+          decryptedItem[key] = decrypt(item[key]);
+        } else {
+          decryptedItem[key] = item[key];
+        }
+      });
+      return decryptedItem;
+    });
+    return decryptedData;
+  };
 
-
-    const userData = useMemo(() => {
-        const parsedData = JSON.parse(localStorage.getItem('UserData'));
-        return decryptObjectKeys(
-            Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
-        );
-    }, []);
+     const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
+     const UserID = decrypt(userData.ServiceRes.UserID);
+     const RoleID = decrypt(userData.ServiceRes.RoleID);
+     const ECPDivistion = decrypt(userData.ServiceRes.ECPDivistion);
     const certificationOptions = ["Yes", "No"];
     const [selectedCertification, setSelectedCertification] = useState(null);
     const [certificationValues, setCertificationValues] = useState({
@@ -760,7 +771,7 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
                                     name="SalesContractNo"
                                     label="Sales Contract No"
                                     InputLabelProps={{ shrink: true }}
-                                    disabled={!([1, 24, 4].includes(userData[0].roleID))}
+                                    disabled={!([1, 24, 4].includes(RoleID))}
                                 />
 
                                 <Controller
@@ -772,7 +783,7 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
                                             format="dd/MM/yyyy"
                                             value={field.value ? field.value : ""}
                                             onChange={(newValue) => field.onChange(newValue)}
-                                            disabled={!([1, 24, 4].includes(userData[0].roleID))}
+                                            disabled={!([1, 24, 4].includes(RoleID))}
                                             renderInput={(params) => <TextField {...params} />}
                                         />
                                     )}
@@ -1149,7 +1160,7 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
                                         />
                                     )}
                                 />
-                                <RHFTextField name="PortOfDestination" label="Port of Destination" InputLabelProps={{ shrink: true }} disabled={!([1, 24, 4].includes(userData[0].roleID))} />
+                                <RHFTextField name="PortOfDestination" label="Port of Destination" InputLabelProps={{ shrink: true }} disabled={!([1, 24, 4].includes(RoleID))} />
                                 <RHFTextField name="ReasonOfDelayInLC" label="Reason Of Delay in LC" InputLabelProps={{ shrink: true }} />
 
                                 <RHFAutocomplete
@@ -1183,7 +1194,7 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
                                 />
 
                                 <RHFTextField name="ItemDes" label="Item description" InputLabelProps={{ shrink: true }} multiline sx={{ mb: 2 }} rows={3} disabled />
-                                <RHFTextField name="LogisticComments" label="Logistics Comments" InputLabelProps={{ shrink: true }} multiline sx={{ mb: 2 }} rows={3} disabled={!([1, 24, 4].includes(userData[0].roleID))} />
+                                <RHFTextField name="LogisticComments" label="Logistics Comments" InputLabelProps={{ shrink: true }} multiline sx={{ mb: 2 }} rows={3} disabled={!([1, 24, 4].includes(RoleID))} />
                                 <RHFTextField name="MerComm" label="Merchandiser Comments" InputLabelProps={{ shrink: true }} multiline sx={{ mb: 2 }} rows={3} />
 
                             </Box>

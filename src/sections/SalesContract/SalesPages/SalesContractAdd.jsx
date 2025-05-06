@@ -42,19 +42,33 @@ import FormProvider, {
     RHFAutocomplete,
 } from 'src/components/hook-form';
 import PropTypes from "prop-types";
-import { decryptObjectKeys } from "src/api/encryption";
+
 import { useSettingsContext } from "src/components/settings";
+import { decrypt } from "src/api/encryption";
 
 
 
 const SalesContractAdd = () => {
 
-     const userData = useMemo(() => {
-              const parsedData = JSON.parse(localStorage.getItem('UserData'));
-              return decryptObjectKeys(
-                Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
-              );
-            }, []);
+ const decryptObjectKeys = (data, keysToExclude = []) => {
+    const decryptedData = data.map((item) => {
+      const decryptedItem = {};
+      Object.keys(item).forEach((key) => {
+        if (!keysToExclude.includes(key)) {
+          decryptedItem[key] = decrypt(item[key]);
+        } else {
+          decryptedItem[key] = item[key];
+        }
+      });
+      return decryptedItem;
+    });
+    return decryptedData;
+  };
+
+     const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
+     const UserID = decrypt(userData.ServiceRes.UserID);
+     const RoleID = decrypt(userData.ServiceRes.RoleID);
+     const ECPDivistion = decrypt(userData.ServiceRes.ECPDivistion);
     const certificationOptions = ["Yes", "No"];
     const [selectedCertification, setSelectedCertification] = useState(null);
     const [certificationValues, setCertificationValues] = useState({
@@ -663,7 +677,7 @@ const SalesContractAdd = () => {
                             sx={{ mb: 3 }}
                         >
                             {/* Booking Reference No */}
-                            {[1, 24, 4].includes(userData[0].roleID) && (
+                            {[1, 24, 4].includes(RoleID) && (
                                 <>
                                     <RHFTextField name="SalesContractNo" label="Sales Contract No" />
 
@@ -1068,7 +1082,7 @@ const SalesContractAdd = () => {
                                     />
                                 )}
                             />
-                            {[1, 24, 4].includes(userData[0].roleID) && (
+                            {[1, 24, 4].includes(RoleID) && (
                                 <RHFTextField name="PortOfDestination" label="Port of Destination" />
                             )}
                             <RHFTextField name="ReasonOfDelayInLC" label="Reason Of Delay in TT" />
@@ -1104,7 +1118,7 @@ const SalesContractAdd = () => {
 
 
                             <RHFTextField name="ItemDes" label="Item description" InputLabelProps={{ shrink: true }} multiline sx={{ mb: 2 }} rows={3} />
-                            {[1, 24, 4].includes(userData[0].roleID) && (
+                            {[1, 24, 4].includes(RoleID) && (
                             <RHFTextField name="LogisticComments" label="Logistics Comments" multiline sx={{ mb: 2 }} rows={3} />
                             )}
                             <RHFTextField name="MerComm" label="Merchandiser Comments" multiline sx={{ mb: 2 }} rows={3} />

@@ -13,18 +13,29 @@ import {
 
 import Scrollbar from "src/components/scrollbar";
 import { Get } from "src/api/apibasemethods";
-import { decryptObjectKeys } from "src/api/encryption";
+import { decrypt } from "src/api/encryption";
 // import BookingOrder from "./BookingOrder";
 
 const BookingView = () => {
-    const userData = useMemo(() => {
-           const parsedData = JSON.parse(localStorage.getItem('UserData'));
-           return decryptObjectKeys(
-             Array.isArray(parsedData) ? parsedData : [parsedData]  // Ensure it's wrapped in an array if it's not already
-           );
-         }, []);
-    const userdata = JSON.parse(localStorage.getItem("UserData"))
+  
+  const decryptObjectKeys = (data) => {
+    const decryptedData = data.map((item) => {
+      const decryptedItem = {};
+      Object.keys(item).forEach((key) => {
+        decryptedItem[key] = decrypt(item[key]);
+      });
+      return decryptedItem;
+    });
+    return decryptedData;
+  };
 
+
+
+    const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
+    const UserID=decrypt(userData.ServiceRes.UserID);
+    const RoleID=decrypt(userData.ServiceRes.RoleID);
+    const ECPDivistion=decrypt(userData.ServiceRes.ECPDivistion);
+console.log(UserID,RoleID,ECPDivistion)
     const [data, setData] = useState([]);
     const [selectedRows, setSelectedRows] = useState([]);
     const [page, setPage] = useState(0);
@@ -34,12 +45,12 @@ const BookingView = () => {
     const [showForm, setShowForm] = useState(false);
 
     useEffect(() => {
-        axios.get(`https://ssblapi.m5groupe.online:6449/api/BookingPurchase/api/booking?userId=${userData[0].userID}&division=${userData[0].ecpDivistion}`)
+        axios.get(`https://ssblapi.m5groupe.online:6449/api/BookingPurchase/api/booking?userId=${UserID}&division=${ECPDivistion}`)
             .then((response) => {
                 setData(response.data);
             })
             .catch((error) => console.error("Error fetching data:", error));
-    }, [userData]);
+    }, [UserID,ECPDivistion]);
     console.log("view", data)
     const handleSelectRow = (row) => {
         setSelectedRows((prevSelected) =>

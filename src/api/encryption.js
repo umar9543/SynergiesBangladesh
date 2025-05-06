@@ -1,7 +1,7 @@
 import CryptoJS from 'crypto-js';
 import { Crypto_Key } from 'src/config-global';
 
-const key = '$@ooMR783_23';
+const key = Crypto_Key;
 
 // Pad the key to meet TripleDES requirements
 const paddedKey = CryptoJS.enc.Utf8.parse(key.padEnd(24, ' '));
@@ -58,15 +58,4 @@ const decrypt = (encryptedText) => {
   return decrypted.toString(CryptoJS.enc.Utf8);
 };
 
-  const decryptObjectKeys = (data) => {
-    const decryptedData = data.map((item) => {
-      const decryptedItem = {};
-      Object.keys(item).forEach((keyss) => {
-        decryptedItem[keyss] = decrypt(item[keyss]);
-      });
-      return decryptedItem;
-    });
-    return decryptedData;
-  };
-
-export { encrypt, decrypt,decryptObjectKeys };
+export { encrypt, decrypt };
