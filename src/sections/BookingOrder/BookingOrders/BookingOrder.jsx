@@ -51,9 +51,9 @@ const BookingOrder = () => {
      
      
          const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
-         const UserID=decrypt(userData.ServiceRes.UserID);
-         const RoleID=decrypt(userData.ServiceRes.RoleID);
-         const ECPDivistion=decrypt(userData.ServiceRes.ECPDivistion);
+         const UserID=decrypt(userData.UserID);
+         const RoleID=decrypt(userData.RoleID);
+         const ECPDivistion=decrypt(userData.ECPDivistion);
     const certificationOptions = ["Yes", "No"];
     const [selectedCertification, setSelectedCertification] = useState(null);
     const [certificationValues, setCertificationValues] = useState({
@@ -335,8 +335,8 @@ const BookingOrder = () => {
         if (values?.productPortfolio?.productPortfolioID) {
             Get(`https://ssblapi.m5groupe.online:6449/api/productcategory/${values?.productPortfolio?.productPortfolioID}`)
                 .then(response => {
-                    const decryptedData = decryptObjectKeys(response.data);
-                    setproductCategoryData(decryptedData)
+                  
+                    setproductCategoryData(response.data)
                 })
                 .catch(error => console.error("Error fetching customer brands:", error));
         } else {

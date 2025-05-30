@@ -77,7 +77,7 @@ export default function JwtLoginView() {
       const encryptedAgency = encodeURIComponent(encrypt(loginInfo.AgencyName));
   
       // Construct the API URL with encrypted parameters
-      const apiUrl = `https://merchantportalssblapi.m5groupe.online:6447/mapi/GetLoginInfo?UserCode=${encryptedUserCode}&Password=${encryptedPassword}&AgencyName=${encryptedAgency}`;
+      const apiUrl = `https://ssblapitest.m5groupe.online/mapi/GetLoginInfo?UserCode=${encryptedUserCode}&Password=${encryptedPassword}&AgencyName=${encryptedAgency}`;
   
       // Make the GET request
       const response = await fetch(apiUrl, {
@@ -91,7 +91,7 @@ export default function JwtLoginView() {
       if (response.ok) {
         const data = await response.json();
         const loginTime = new Date().getTime();
-        localStorage.setItem('UserData', JSON.stringify(data));
+        localStorage.setItem('UserData', JSON.stringify(data.ServiceRes));
         localStorage.setItem('loginTime', loginTime);
         router.push(returnTo || PATH_AFTER_LOGIN);
       } else {

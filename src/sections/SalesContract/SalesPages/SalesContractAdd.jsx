@@ -50,25 +50,25 @@ import { decrypt } from "src/api/encryption";
 
 const SalesContractAdd = () => {
 
- const decryptObjectKeys = (data, keysToExclude = []) => {
-    const decryptedData = data.map((item) => {
-      const decryptedItem = {};
-      Object.keys(item).forEach((key) => {
-        if (!keysToExclude.includes(key)) {
-          decryptedItem[key] = decrypt(item[key]);
-        } else {
-          decryptedItem[key] = item[key];
-        }
-      });
-      return decryptedItem;
-    });
-    return decryptedData;
-  };
+    const decryptObjectKeys = (data, keysToExclude = []) => {
+        const decryptedData = data.map((item) => {
+            const decryptedItem = {};
+            Object.keys(item).forEach((key) => {
+                if (!keysToExclude.includes(key)) {
+                    decryptedItem[key] = decrypt(item[key]);
+                } else {
+                    decryptedItem[key] = item[key];
+                }
+            });
+            return decryptedItem;
+        });
+        return decryptedData;
+    };
 
-     const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
-     const UserID = decrypt(userData.ServiceRes.UserID);
-     const RoleID = decrypt(userData.ServiceRes.RoleID);
-     const ECPDivistion = decrypt(userData.ServiceRes.ECPDivistion);
+    const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
+    const UserID = decrypt(userData.UserID);
+    const RoleID = decrypt(userData.RoleID);
+    const ECPDivistion = decrypt(userData.ECPDivistion);
     const certificationOptions = ["Yes", "No"];
     const [selectedCertification, setSelectedCertification] = useState(null);
     const [certificationValues, setCertificationValues] = useState({
@@ -119,7 +119,7 @@ const SalesContractAdd = () => {
         //     .required("Shipment Date (Buyer) is required")
         //     .min(Yup.ref('IssuingDate'), "Shipment Date (Buyer) must be after Placement Date"),
 
-         ApplyDate: Yup.date().required("Apply Date is required"),
+        ApplyDate: Yup.date().required("Apply Date is required"),
         //     .min(Yup.ref('IssuingDate'), "Shipment Date (Vendor) must be after Placement Date"),
         customer: Yup.object().nullable().required("Customer is required"),
 
@@ -235,7 +235,7 @@ const SalesContractAdd = () => {
 
 
     useEffect(() => {
-        Get("https://ssblapi.m5groupe.online:6449/api/customer")
+        Get("https://ssblapi2test.m5groupe.online/api/customer")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
 
@@ -250,21 +250,32 @@ const SalesContractAdd = () => {
             .catch(error => console.error("Error fetching customers:", error));
     }, []);
 
+    useEffect(() => {
+        if (values?.customer?.customerID) {
+
+            Get(`https://ssblapi2test.m5groupe.online/api/SalesContract/venders?customerId=${values?.customer?.customerID}`)
+                .then(response => {
+
+                    setSupplierData(response.data)
+                }
+                )
+                .catch(error => console.error("Error fetching SupplierData:", error));
+        }
+    }, [values?.customer?.customerID, setValue]);
+
+    // useEffect(() => {
+    //     Get("https://ssblapi2test.m5groupe.online/api/Supplier")
+    //         .then(response => {
+    //             const decryptedData = decryptObjectKeys(response.data);
+    //             setSupplierData(decryptedData)
+    //         }
+    //         )
+    //         .catch(error => console.error("Error fetching customers:", error));
+    // }, []);
 
 
     useEffect(() => {
-        Get("https://ssblapi.m5groupe.online:6449/api/Supplier")
-            .then(response => {
-                const decryptedData = decryptObjectKeys(response.data);
-                setSupplierData(decryptedData)
-            }
-            )
-            .catch(error => console.error("Error fetching customers:", error));
-    }, []);
-
-
-    useEffect(() => {
-        Get("https://ssblapi.m5groupe.online:6449/api/Bank")
+        Get("https://ssblapi2test.m5groupe.online/api/Bank")
             .then(response => {
                 const decryptedData = decryptObjectKeys(response.data);
                 setCurrencies(decryptedData)
@@ -277,7 +288,7 @@ const SalesContractAdd = () => {
 
     const InsertMstData = async (DataToInsert) => {
         try {
-            const res = await Post(`https://ssblapi.m5groupe.online:6449/api/SalesContract/add-master`, DataToInsert);
+            const res = await Post(`https://ssblapi2test.m5groupe.online/api/SalesContract/add-master`, DataToInsert);
 
             if (res.status === 200) {
                 const { contractID } = res.data;
@@ -318,7 +329,7 @@ const SalesContractAdd = () => {
         }));
 
         try {
-            const res = await Post(`https://ssblapi.m5groupe.online:6449/api/SalesContract/add-detail`, detailPayload);
+            const res = await Post(`https://ssblapi2test.m5groupe.online/api/SalesContract/add-detail`, detailPayload);
             return res.status === 200; // ✅ Return true if success
         } catch (error) {
             console.error(`Error creating detail data:`, error);
@@ -338,11 +349,13 @@ const SalesContractAdd = () => {
                 CustomerID: data.customer?.customerID,
                 SupplierID: data.supplier?.venderLibraryID,
                 ApplyDate: data.ApplyDate ? toUTCISOString(new Date(data.ApplyDate)) : null,
-                BankID: data.ApplicantBankID || 0,
+                BankID: data.Bank?.bankID || 0,
+                ApplicantBankID: data.ApplicantBankID.bankID || 0,
+
                 SalesContractDate: data.IssuingDate ? toUTCISOString(new Date(data.IssuingDate)) : new Date(0),
                 ExpiryDate: toUTCISOString(new Date(data.ExpiryDate)),
                 Payment: data.PaymentType,
-              
+                CreatedByID: UserID,
                 ToleranceInDays: data.ToleranceInDays,
                 Items: data.Items,
                 FabricSource: data.FabricSource,
@@ -353,7 +366,7 @@ const SalesContractAdd = () => {
                 SalesContractType: data.SalesContractType,
                 LogisticComments: data.LogisticComments || "",
                 MerchandiserComments: data.MerComm || "",
-                ApplicantBankRequired: data.ApplicantBankRequired||0,
+                ApplicantBankRequired: data.ApplicantBankRequired,
                 ApprovalByHOD: data.ApprovalByHOD,
                 ApprovalByManagment: data.ApprovalByManagment,
                 ApprovalByGM: data.ApprovalByGM,
@@ -431,10 +444,10 @@ const SalesContractAdd = () => {
             console.log(poid, 'poid')
             try {
                 // Fetch the item description using the POID
-                const descriptionResponse = await fetch(`https://ssblapi.m5groupe.online:6449/api/SalesContract/description-by-poid?poids=${poid}`);
+                const descriptionResponse = await fetch(`https://ssblapi2test.m5groupe.online/api/SalesContract/description-by-poid?poids=${poid}`);
                 if (!descriptionResponse.ok) throw new Error("Failed to fetch item description");
 
-                const brandResp = await fetch(`https://ssblapi.m5groupe.online:6449/api/SalesContract/brands-by-poids?poids=${poid}`);
+                const brandResp = await fetch(`https://ssblapi2test.m5groupe.online/api/SalesContract/brands-by-poids?poids=${poid}`);
                 if (!brandResp.ok) throw new Error("Failed to fetch brand data");
 
                 // Parse JSON responses
@@ -446,13 +459,14 @@ const SalesContractAdd = () => {
 
                 // Assuming descriptionData and brandRespData are arrays or objects you want to set in your form fields
                 setValue("ItemDes", descriptionData.join(", ") || "");  // Set description data if available
-                setValue("Brand", brandRespData.join(", ") || "");  // Set brand data if available
+                setValue("Brand", brandRespData.join(", ") || "");
+                // Set brand data if available
             } catch (error) {
                 console.error("Error during fetch:", error.message);
             }
         }
         setOpen(false);
-
+        setPONO('');
         setDataList([]);
     };
 
@@ -471,11 +485,11 @@ const SalesContractAdd = () => {
             let apiUrl;
 
             if (PONO?.trim()) {
-                apiUrl = `https://ssblapi.m5groupe.online:6449/api/poreport?customerId=${customerId}&supplierId=${supplierId}&${PONO}`;
+                apiUrl = `https://ssblapi2test.m5groupe.online/api/poreport?customerId=${customerId}&supplierId=${supplierId}&poid=${PONO}`;
 
             }
             else {
-                apiUrl = `https://ssblapi.m5groupe.online:6449/api/poreport?customerId=${customerId}&supplierId=${supplierId}`;
+                apiUrl = `https://ssblapi2test.m5groupe.online/api/poreport?customerId=${customerId}&supplierId=${supplierId}`;
 
             }
 
@@ -539,7 +553,7 @@ const SalesContractAdd = () => {
         setValue("ExpiryDate", newExpiryDate);
         if (latestRow?.poid) {
             try {
-                const response = await fetch(`https://ssblapi.m5groupe.online:6449/api/SalesContract/payment-by-poid?poid=${latestRow.poid}`);
+                const response = await fetch(`https://ssblapi2test.m5groupe.online/api/SalesContract/payment-by-poid?poid=${latestRow.poid}`);
                 if (!response.ok) throw new Error("Failed to fetch payment data");
 
                 const paymentData = await response.json();
@@ -793,6 +807,7 @@ const SalesContractAdd = () => {
                                     fullWidth
                                     value={PONO}
                                     onChange={(e) => setPONO(e.target.value)}
+
                                     margin="dense"
                                 />
 
@@ -1101,25 +1116,34 @@ const SalesContractAdd = () => {
                                 options={currencies}
                                 getOptionLabel={(option) => option?.bankName || ""}
                                 value={currencies?.find((x) => x.bankID === values?.ApplicantBankID?.bankID) || null}
-                                onChange={(_, newValue) => {
-                                    setValue("ApplicantBankID", newValue?.bankID || 0, { shouldValidate: true });
-                                    setValue("ApplicantBankRequired", newValue?.bankID !== 0, { shouldValidate: true }); // 👈 sets boolean
+                                onChange={(event, newValue) => {
+                                    setValue("ApplicantBankID", newValue);
+                                    if (newValue) {
+                                        setValue("ApplicantBankRequired", true);
+                                    } else {
+                                        setValue("ApplicantBankRequired", false); // optional: reset to 0 if deselected
+                                    }
                                 }}
                                 fullWidth
                             />
+                            {[1, 24, 4].includes(RoleID) && (
+                                <RHFAutocomplete
+                                    name="Bank"
+                                    label="Advise Through"
+                                    options={currencies}
+                                    getOptionLabel={(option) => option?.bankName || ""}
+                                    value={currencies?.find((x) => x.bankID === values?.Bank?.bankID) || null}
 
-                            <Controller
-                                name="ApplicantBankRequired"
-                                control={control}
-                                defaultValue={false}
-                                render={({ field }) => <input type="hidden" {...field} />}
-                            />
+                                    fullWidth
+                                />
+                            )}
+
 
 
 
                             <RHFTextField name="ItemDes" label="Item description" InputLabelProps={{ shrink: true }} multiline sx={{ mb: 2 }} rows={3} />
                             {[1, 24, 4].includes(RoleID) && (
-                            <RHFTextField name="LogisticComments" label="Logistics Comments" multiline sx={{ mb: 2 }} rows={3} />
+                                <RHFTextField name="LogisticComments" label="Logistics Comments" multiline sx={{ mb: 2 }} rows={3} />
                             )}
                             <RHFTextField name="MerComm" label="Merchandiser Comments" multiline sx={{ mb: 2 }} rows={3} />
 

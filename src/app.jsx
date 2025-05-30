@@ -24,6 +24,7 @@ import { SettingsDrawer, SettingsProvider } from 'src/components/settings';
 
 import { AuthProvider } from 'src/auth/context/jwt';
 import { useEffect } from 'react';
+import ComInvoice from './sections/SalesContract/SalesPages/ComInvoice';
 
 // ----------------------------------------------------------------------
 
@@ -79,5 +80,6 @@ export default function App() {
         </SettingsProvider>
       </LocalizationProvider>
     </AuthProvider>
+   
   );
 }

@@ -6,6 +6,8 @@ import DashboardLayout from 'src/layouts/dashboard';
 
 import { LoadingScreen, SplashScreen } from 'src/components/loading-screen';
 import useUserData from 'src/routes/hooks/useUserData';
+import SalesContractViewPageHod from 'src/pages/dashboard/Approvals/viewHod';
+import SalesContractViewPageManagement from 'src/pages/dashboard/Approvals/viewManagement';
 
 // ----------------------------------------------------------------------
 
@@ -35,8 +37,9 @@ const BookingEditPage = lazy(() => import('src/pages/dashboard/BookingOrder/edit
 
 const SalesContractPage = lazy(() => import('src/pages/dashboard/SalesContract/view'));
 const SalesContractAddPage = lazy(() => import('src/pages/dashboard/SalesContract/add'));
-const SalesContractEditPage = lazy(() => import('src/pages/dashboard/SalesContract/edit'));
-
+const SalesContractEditPage = lazy(() => import('src/pages/dashboard/SalesContract/edit'));   
+const SalesContractPDFPage = lazy(() => import('src/pages/dashboard/SalesContract/pdf'));   
+const SalesContractViewPageManager = lazy(() => import('src/pages/dashboard/Approvals/viewManager'));
 // ----------------------------------------------------------------------
 
 
@@ -158,6 +161,17 @@ export const dashboardRoutes = [
           // { path: 'view', element: <BookingViewPage /> },
           { path: 'add', element: <SalesContractAddPage /> },
           { path: 'edit/:id', element: <SalesContractEditPage /> },
+           { path: 'pdf/:id', element: <SalesContractPDFPage /> },
+        ],
+      },
+       {
+        path: 'Approvals',
+        children: [
+        
+          // { path: 'view', element: <BookingViewPage /> },
+          { path: 'viewManager', element: <SalesContractViewPageManager /> },
+          { path: 'viewHod', element: <SalesContractViewPageHod/> },
+           { path: 'viewManagement', element: <SalesContractViewPageManagement /> },
         ],
       }
     ],

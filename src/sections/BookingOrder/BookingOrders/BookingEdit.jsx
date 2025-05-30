@@ -60,9 +60,9 @@ const BookingEdit = ({ selectedBooking, currentStyles, urlData }) => {
 
  
    const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
-   const UserID=decrypt(userData.ServiceRes.UserID);
-   const RoleID=decrypt(userData.ServiceRes.RoleID);
-   const ECPDivistion=decrypt(userData.ServiceRes.ECPDivistion);
+   const UserID=decrypt(userData.UserID);
+   const RoleID=decrypt(userData.RoleID);
+   const ECPDivistion=decrypt(userData.ECPDivistion);
     const certificationOptions = ["Yes", "No"];
     const [selectedCertification, setSelectedCertification] = useState(selectedBooking?.b_isCertifications ? 1 : 0 || null);
     const [certificationValues, setCertificationValues] = useState({

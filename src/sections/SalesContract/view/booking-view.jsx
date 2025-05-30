@@ -1,5 +1,5 @@
 import isEqual from 'lodash/isEqual';
-import {useRef, useMemo, useState, useEffect, useCallback } from 'react';
+import { useRef, useMemo, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 
 import Card from '@mui/material/Card';
@@ -13,7 +13,7 @@ import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 import { useBoolean } from 'src/hooks/use-boolean';
-import {  Get } from 'src/api/apibasemethods';
+import { Get } from 'src/api/apibasemethods';
 
 import { LoadingScreen } from 'src/components/loading-screen';
 
@@ -67,11 +67,11 @@ const defaultFilters = {
 export default function BookingListView() {
   const navigate = useNavigate();
 
- 
+
   const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
-  const UserID = decrypt(userData.ServiceRes.UserID);
-  const RoleID = decrypt(userData.ServiceRes.RoleID);
-  const ECPDivistion = decrypt(userData.ServiceRes.ECPDivistion);
+  const UserID = decrypt(userData.UserID);
+  const RoleID = decrypt(userData.RoleID);
+  const ECPDivistion = decrypt(userData.ECPDivistion);
   console.log(userData, "userData")
   // Table component Ref
   const tableComponentRef = useRef();
@@ -97,7 +97,7 @@ export default function BookingListView() {
 
   const FetchSalesContractData = useCallback(async () => {
     try {
-      const response = await Get(`https://localhost:44347/api/SalesContract/GetSalesContracts?roleId=${RoleID}&userId=${UserID}`);
+      const response = await Get(`https://ssblapi.m5groupe.online:6449/api/SalesContract/GetSalesContracts?roleId=${RoleID}&userId=${UserID}`);
       const formatedData = response.data.map(item => ({
         ...item,
         salesContractDate: item.salesContractDate === "01/01/1970" ? null : item.salesContractDate,
@@ -180,7 +180,9 @@ export default function BookingListView() {
     // }
 
   };
-
+  const moveToPDFView = async (e) => {
+    navigate(paths.dashboard.SalesContract.pdf(e));
+  }
   // const DeleteDetailTableRow = async (id) => {
   //   // const updatedDetails = yarnContractDetails.filter((row) => row !== rowToDelete);
   //   // setYarnContractDetails(updatedDetails);
@@ -283,6 +285,7 @@ export default function BookingListView() {
                           row={row}
                           selected={table.selected.includes(row?.poid)}
                           onEditRow={() => moveToEditForm(row?.salesContractID)}
+                          onViewRow={() => moveToPDFView(row?.salesContractID)}
                         // onDeleteRow={() => DeleteDetailTableRow(row?.YarnDatabaseID)}
                         />
                       ))}

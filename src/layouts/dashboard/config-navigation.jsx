@@ -50,7 +50,7 @@ const ICONS = {
 export function useNavData() {
   const { t } = useTranslate();
   const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
-  
+
 
   const data = useMemo(
     () => [
@@ -73,9 +73,9 @@ export function useNavData() {
         /* eslint-disable no-nested-ternary */
         subheader: t('Application'),
         items:
-        //  (userData.roleID === '1') ?
+          //  (userData.roleID === '1') ?
           [
-            { title: t('Booking Order'), path: paths.dashboard.bookingOrder.root, icon:ICONS.booking },
+            { title: t('Booking Order'), path: paths.dashboard.bookingOrder.root, icon: ICONS.booking },
             // {
             //   title: t('Reports'),
             //   path: paths.dashboard.reports.root,
@@ -92,31 +92,31 @@ export function useNavData() {
             //     // { title: t('Shipment Update Sheet'), path: paths.dashboard.reports.ShipmentUpdateReport.root },
             //     // { title: t('Yearly Commission Report'), path: paths.dashboard.reports.YearlyCommissionReport.root },
             //     // { title: t('Order Report'), path: paths.dashboard.reports.OrderReport.root },
-                
+
             //   ],
             // },
           ]
-          // :
-          // [
-          //   // {
-          //   //   title: t('Reports'),
-          //   //   path: paths.dashboard.reports.root,
-          //   //   icon: ICONS.file,
-          //   //   children: [
-          //   //     { title: t('WIP Report'), path: paths.dashboard.reports.WIPReport.root },
-          //   //     { title: t('Business Summary O/W'), path: paths.dashboard.reports.BusinessSummaryOWReport.root },
-          //   //     { title: t('Business Summary'), path: paths.dashboard.reports.BusinessSummaryReport.root },
-          //   //     { title: t('Shipment & Tracking'), path: paths.dashboard.reports.ShipmentTrackingReport.root },
-          //   //     { title: t('Factory WIP Report'), path: paths.dashboard.reports.FactoryWIPReport.root },
-          //   //     { title: t('Shipment History Report'), path: paths.dashboard.reports.ShipmentHistoryReport.root },
-          //   //     { title: t('Shipment Delay Report'), path: paths.dashboard.reports.ShipmentDelayReport.root },
-          //   //     { title: t('Commission Due Report'), path: paths.dashboard.reports.CommissionDueReport.root },
-          //   //     { title: t('Shipment Update Sheet'), path: paths.dashboard.reports.ShipmentUpdateReport.root },
-          //   //     { title: t('Yearly Commission Report'), path: paths.dashboard.reports.YearlyCommissionReport.root },
-          //   //     { title: t('Order Report'), path: paths.dashboard.reports.OrderReport.root }
-          //   //   ],
-          //   // },
-          // ]
+        // :
+        // [
+        //   // {
+        //   //   title: t('Reports'),
+        //   //   path: paths.dashboard.reports.root,
+        //   //   icon: ICONS.file,
+        //   //   children: [
+        //   //     { title: t('WIP Report'), path: paths.dashboard.reports.WIPReport.root },
+        //   //     { title: t('Business Summary O/W'), path: paths.dashboard.reports.BusinessSummaryOWReport.root },
+        //   //     { title: t('Business Summary'), path: paths.dashboard.reports.BusinessSummaryReport.root },
+        //   //     { title: t('Shipment & Tracking'), path: paths.dashboard.reports.ShipmentTrackingReport.root },
+        //   //     { title: t('Factory WIP Report'), path: paths.dashboard.reports.FactoryWIPReport.root },
+        //   //     { title: t('Shipment History Report'), path: paths.dashboard.reports.ShipmentHistoryReport.root },
+        //   //     { title: t('Shipment Delay Report'), path: paths.dashboard.reports.ShipmentDelayReport.root },
+        //   //     { title: t('Commission Due Report'), path: paths.dashboard.reports.CommissionDueReport.root },
+        //   //     { title: t('Shipment Update Sheet'), path: paths.dashboard.reports.ShipmentUpdateReport.root },
+        //   //     { title: t('Yearly Commission Report'), path: paths.dashboard.reports.YearlyCommissionReport.root },
+        //   //     { title: t('Order Report'), path: paths.dashboard.reports.OrderReport.root }
+        //   //   ],
+        //   // },
+        // ]
       },
 
       {
@@ -124,12 +124,27 @@ export function useNavData() {
         items: [
           {
             title: t('Sales Contract '),
-          path: paths.dashboard.root,
+            path: paths.dashboard.root,
             icon: ICONS.assignment,
             children: [
               { title: t('Sales Contract'), path: paths.dashboard.SalesContract.root },
-            
-      
+
+
+            ]
+          },
+        ],
+      },
+      {
+        subheader: t('Application'),
+        items: [
+          {
+            title: t('Approvals'),
+            path: paths.dashboard.root,
+            icon: ICONS.analytics,
+            children: [
+              { title: t('Manager Approval'), path: paths.dashboard.Approvals.viewManager},
+
+
             ]
           },
         ],

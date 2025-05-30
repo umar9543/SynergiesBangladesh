@@ -7,14 +7,14 @@ import IconButton from '@mui/material/IconButton';
 
 import Iconify from 'src/components/iconify';
 import { decrypt } from 'src/api/encryption';
-import { Button } from '@mui/material';
+import { Button, Tooltip } from '@mui/material';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { useBoolean } from 'src/hooks/use-boolean';
 import Label from 'src/components/label';
 
 // ----------------------------------------------------------------------
 
-export default function BookingTableRow({ row, selected, onEditRow, onDeleteRow }) {
+export default function BookingTableRow({ row, selected, onEditRow, onDeleteRow, onViewRow }) {
   const {
     salesContractNo,
     customerName,
@@ -26,10 +26,10 @@ export default function BookingTableRow({ row, selected, onEditRow, onDeleteRow 
     managmentApproval,
   } = row;
 
-   const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
-   const UserID = decrypt(userData.ServiceRes.UserID);
-   const RoleID = decrypt(userData.ServiceRes.RoleID);
-   const ECPDivistion = decrypt(userData.ServiceRes.ECPDivistion);
+  const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
+  const UserID = decrypt(userData.UserID);
+  const RoleID = decrypt(userData.RoleID);
+  const ECPDivistion = decrypt(userData.ECPDivistion);
   const confirm = useBoolean();
 
   const formatDate = (date) => {
@@ -93,7 +93,9 @@ export default function BookingTableRow({ row, selected, onEditRow, onDeleteRow 
             <IconButton onClick={() => onEditRow()}>
               <Iconify icon="solar:pen-bold" />
             </IconButton>
-
+            <IconButton onClick={() => onViewRow()}>
+              <Iconify icon="mdi:file-pdf-box" />
+            </IconButton>
             {/* <IconButton
                 color="error"
                 onClick={() => {
@@ -104,6 +106,11 @@ export default function BookingTableRow({ row, selected, onEditRow, onDeleteRow 
               </IconButton> */}
           </>
         </TableCell>
+        {/* <TableCell align="center" sx={{ px: 1, whiteSpace: 'nowrap' }}>
+          <Tooltip title="View PDF">
+           
+          </Tooltip>
+        </TableCell> */}
       </TableRow>
 
       <ConfirmDialog
@@ -131,6 +138,7 @@ export default function BookingTableRow({ row, selected, onEditRow, onDeleteRow 
 BookingTableRow.propTypes = {
   onDeleteRow: PropTypes.func,
   onEditRow: PropTypes.func,
+  onViewRow: PropTypes.func,
   row: PropTypes.object,
   selected: PropTypes.bool,
 };

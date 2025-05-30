@@ -81,7 +81,15 @@ export const paths = {
     SalesContract:{
       root: `${ROOTS.DASHBOARD}/SalesContract`,
       add:  `${ROOTS.DASHBOARD}/SalesContract/add`,
-      edit:(id) =>`${ROOTS.DASHBOARD}/SalesContract/edit/${id}`
+      edit:(id) =>`${ROOTS.DASHBOARD}/SalesContract/edit/${id}`,
+      pdf:(id) =>`${ROOTS.DASHBOARD}/SalesContract/pdf/${id}`
+    },
+     Approvals:{
+      
+      viewManager:  `${ROOTS.DASHBOARD}/Approvals/viewManager`,
+      viewHod:  `${ROOTS.DASHBOARD}/Approvals/viewHod`,
+      viewManagement:  `${ROOTS.DASHBOARD}/Approvals/viewManagement`,
+     
     }
   },
 };

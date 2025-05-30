@@ -147,7 +147,7 @@ const M5invoice = () => {
     };
 
     return (
-        <PDFViewer style={{ width: '100vw', height: '100vh' }}>
+        <PDFViewer style={{ width: '100%', height: '800px' }}>
             <Document>
                 <Page size="A3" orientation='landscape' style={styles.page}>
                     <View>

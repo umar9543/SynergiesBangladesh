@@ -1,22 +1,18 @@
 import { useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useNavigate, useParams } from 'react-router';
+import { useNavigate } from 'react-router';
 import { decrypt } from 'src/api/encryption';
 import { paths } from 'src/routes/paths';
-import SalesContractEdit from 'src/sections/SalesContract/SalesPages/SalesContractEdit';
-import { BookingEditView } from 'src/sections/SalesContract/view';
-import SalesContractEditView from 'src/sections/SalesContract/view/booking-edit-view';
-
+import { BookingListView } from 'src/sections/SalesContract/view';
 
 
 
 // ----------------------------------------------------------------------
 
-export default function SalesContractEditPage() {
+export default function SalesContractViewPageHod() {
   const navigate = useNavigate()
-  const param = useParams();
   const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
-console.log(param,'paramas')
+
   // useEffect(() => {
   //   if (userData.roleID !== '1') {
   //     navigate(paths.page403)
@@ -28,7 +24,7 @@ console.log(param,'paramas')
         <title>Sales Contract</title>
       </Helmet>
 
-      <SalesContractEditView  urlData={param}/>
+      <BookingListView/>
     </>
   );
 }

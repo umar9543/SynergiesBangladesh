@@ -67,9 +67,9 @@ const defaultFilters = {
 export default function BookingListView() {
   const navigate = useNavigate();
   const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
-     const UserID=decrypt(userData.ServiceRes.UserID);
-     const RoleID=decrypt(userData.ServiceRes.RoleID);
-     const ECPDivistion=decrypt(userData.ServiceRes.ECPDivistion);
+     const UserID=decrypt(userData.UserID);
+     const RoleID=decrypt(userData.RoleID);
+     const ECPDivistion=decrypt(userData.ECPDivistion);
  
   
   // Table component Ref
@@ -96,7 +96,7 @@ export default function BookingListView() {
 
   const FetchBookingData = useCallback(async () => {
     try {
-      const response = await Get(`https://ssblapi.m5groupe.online:6449/api/BookingPurchase/api/booking?userId=${UserID}&division=${ECPDivistion}`);
+      const response = await Get(`https://localhost:44347/api/BookingPurchase/api/booking?userId=${UserID}&division=${ECPDivistion}`);
       // const keysToExclude = ['EmployeeImage'];
       // const decryptedData = decryptObjectKeys(response.data.ServiceRes, keysToExclude);
       setTableData(response.data);

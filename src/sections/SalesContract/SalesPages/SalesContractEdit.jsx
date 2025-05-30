@@ -53,25 +53,25 @@ import { LoadingScreen } from "src/components/loading-screen";
 
 const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
 
- const decryptObjectKeys = (data, keysToExclude = []) => {
-    const decryptedData = data.map((item) => {
-      const decryptedItem = {};
-      Object.keys(item).forEach((key) => {
-        if (!keysToExclude.includes(key)) {
-          decryptedItem[key] = decrypt(item[key]);
-        } else {
-          decryptedItem[key] = item[key];
-        }
-      });
-      return decryptedItem;
-    });
-    return decryptedData;
-  };
+    const decryptObjectKeys = (data, keysToExclude = []) => {
+        const decryptedData = data.map((item) => {
+            const decryptedItem = {};
+            Object.keys(item).forEach((key) => {
+                if (!keysToExclude.includes(key)) {
+                    decryptedItem[key] = decrypt(item[key]);
+                } else {
+                    decryptedItem[key] = item[key];
+                }
+            });
+            return decryptedItem;
+        });
+        return decryptedData;
+    };
 
-     const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
-     const UserID = decrypt(userData.ServiceRes.UserID);
-     const RoleID = decrypt(userData.ServiceRes.RoleID);
-     const ECPDivistion = decrypt(userData.ServiceRes.ECPDivistion);
+    const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
+    const UserID = decrypt(userData.UserID);
+    const RoleID = decrypt(userData.RoleID);
+    const ECPDivistion = decrypt(userData.ECPDivistion);
     const certificationOptions = ["Yes", "No"];
     const [selectedCertification, setSelectedCertification] = useState(null);
     const [certificationValues, setCertificationValues] = useState({
@@ -163,7 +163,10 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
             supplier: selectedBooking?.supplierID
                 ? SupplierData.find((x) => x.venderLibraryID === selectedBooking.supplierID)
                 : null,
-            ApplicantBankID: selectedBooking?.bankID
+            ApplicantBankID: selectedBooking?.applicantBankID
+                ? currencies.find((x) => x.bankID === selectedBooking.applicantBankID.toString())
+                : null,
+            Bank: selectedBooking?.bankID
                 ? currencies.find((x) => x.bankID === selectedBooking.bankID.toString())
                 : null,
 
@@ -402,11 +405,13 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
                 CustomerID: data.customer?.customerID,
                 SupplierID: data.supplier?.venderLibraryID,
                 ApplyDate: data.ApplyDate ? toUTCISOString(new Date(data.ApplyDate)) : null,
-                BankID: data.ApplicantBankID.bankID || 0,
-                SalesContractDate: data.IssuingDate ? toUTCISOString(new Date(data.IssuingDate)) : null,
-                ExpiryDate: toUTCISOString(data?.ExpiryDate),
-                Payment: data.PaymentMode,
-                PaymentType: data.PaymentType,
+                BankID: data.Bank?.bankID || 0,
+                ApplicantBankID: data.ApplicantBankID.bankID,
+
+                SalesContractDate: data.IssuingDate ? toUTCISOString(new Date(data.IssuingDate)) : new Date(0),
+                ExpiryDate: toUTCISOString(new Date(data.ExpiryDate)),
+                Payment: data.PaymentType,
+                CreatedByID: UserID,
                 ToleranceInDays: data.ToleranceInDays,
                 Items: data.Items,
                 FabricSource: data.FabricSource,
@@ -417,7 +422,7 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
                 SalesContractType: data.SalesContractType,
                 LogisticComments: data.LogisticComments || "",
                 MerchandiserComments: data.MerComm || "",
-                ApplicantBankRequired: data?.ApplicantBankRequired,
+                ApplicantBankRequired: data.ApplicantBankRequired,
                 ApprovalByHOD: data.ApprovalByHOD,
                 ApprovalByManagment: data.ApprovalByManagment,
                 ApprovalByGM: data.ApprovalByGM,
@@ -1179,19 +1184,27 @@ const SalesContractEdit = ({ selectedBooking, currentStyles, urlData }) => {
                                     options={currencies}
                                     getOptionLabel={(option) => option?.bankName || ""}
                                     value={currencies?.find((x) => x.bankID === values?.ApplicantBankID?.bankID) || null}
-                                    onChange={(_, newValue) => {
-                                        setValue("ApplicantBankID", newValue?.bankID || 0, { shouldValidate: true });
-                                        setValue("ApplicantBankRequired", newValue?.bankID !== 0, { shouldValidate: true }); // 👈 sets boolean
+                                    onChange={(event, newValue) => {
+                                        setValue("ApplicantBankID", newValue);
+                                        if (newValue) {
+                                            setValue("ApplicantBankRequired", true);
+                                        } else {
+                                            setValue("ApplicantBankRequired", false); // optional: reset to 0 if deselected
+                                        }
                                     }}
                                     fullWidth
                                 />
 
-                                <Controller
-                                    name="ApplicantBankRequired"
-                                    control={control}
-                                    defaultValue={false}
-                                    render={({ field }) => <input type="hidden" {...field} />}
+                                <RHFAutocomplete
+                                    name="Bank"
+                                    label="Advise Through"
+                                    options={currencies}
+                                    getOptionLabel={(option) => option?.bankName || ""}
+                                    value={currencies?.find((x) => x.bankID === values?.Bank?.bankID) || null}
+                                    disabled
+                                    fullWidth
                                 />
+
 
                                 <RHFTextField name="ItemDes" label="Item description" InputLabelProps={{ shrink: true }} multiline sx={{ mb: 2 }} rows={3} disabled />
                                 <RHFTextField name="LogisticComments" label="Logistics Comments" InputLabelProps={{ shrink: true }} multiline sx={{ mb: 2 }} rows={3} disabled={!([1, 24, 4].includes(RoleID))} />

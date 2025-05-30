@@ -3,14 +3,14 @@ import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router';
 import { decrypt } from 'src/api/encryption';
 import { paths } from 'src/routes/paths';
-import SalesContractAdd from 'src/sections/SalesContract/SalesPages/SalesContractAdd';
-
+import ManagerApprovals from 'src/sections/Approvals/view/booking-view';
+import { BookingListView } from 'src/sections/SalesContract/view';
 
 
 
 // ----------------------------------------------------------------------
 
-export default function SalesContractAddPage() {
+export default function SalesContractViewPageManager() {
   const navigate = useNavigate()
   const userData = useMemo(() => JSON.parse(localStorage.getItem('UserData')), []);
 
@@ -25,7 +25,7 @@ export default function SalesContractAddPage() {
         <title>Sales Contract</title>
       </Helmet>
 
-      <SalesContractAdd/>
+      <ManagerApprovals/>
     </>
   );
 }

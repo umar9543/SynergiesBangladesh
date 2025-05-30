@@ -1,0 +1,70 @@
+import PropTypes from 'prop-types';
+
+import Container from '@mui/material/Container';
+
+import { paths } from 'src/routes/paths';
+
+import { useSettingsContext } from 'src/components/settings';
+import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
+
+import { useEffect, useState } from 'react';
+import { Get } from 'src/api/apibasemethods';
+
+import QuotationReport from '../SalesPages/QuotationReport';
+import axios from 'axios';
+import M5invoice from '../SalesPages/M5invoice';
+import SalesContractTakkoPDF from '../SalesPages/SSBL';
+
+// ----------------------------------------------------------------------
+
+export default function  SalesContractPDFView({ urlData }) {
+  const [selectedBooking, setSelectedBooking] = useState(null);
+     const [styles, setStyles] = useState([])
+     console.log(urlData)
+     useEffect(() => {
+         axios.get(`https://ssblapi2test.m5groupe.online/api/SalesContract/${urlData?.id}`)
+             .then(response => {
+                 const formatedData = {
+                     ...response.data,
+                     ApplyDate: new Date(response.data.applyDate),
+                     expectedLCDate: new Date(response.data.expectedLCDate),
+                     IssuingDate: response.data.salesContractDate==="1970-01-01T00:00:00"? null : new Date(response.data.salesContractDate),
+                 }
+                 console.log('format',response.data)
+                 setSelectedBooking(formatedData)
+             })
+             .catch(error => console.error("Error fetching customers:", error));
+ 
+     }, [urlData?.id]);
+ 
+     useEffect(() => {
+         axios.get(`https://ssblapi2test.m5groupe.online/api/SalesContract/get-detail/${urlData?.id}`)
+             .then(response =>
+                 setStyles(response.data)
+             )
+             .catch(error => console.error("Error fetching data:", error));
+     }, [urlData?.id])
+     console.log(selectedBooking)
+     const settings = useSettingsContext();
+     return (
+         <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+             <CustomBreadcrumbs
+                 heading="Sales Contract Information"
+                 links={[
+                     { name: "Home", href: paths.dashboard.root },
+                     { name: "Sales Contract", href: paths.dashboard.SalesContract.root },
+                     { name: "PDF", },
+                 ]}
+                 sx={{ mb: { xs: 3, md: 5 } }}
+             />
+ 
+ 
+ 
+             {(selectedBooking !== null && styles.length > 0) && <SalesContractTakkoPDF selectedBooking={selectedBooking} currentStyles={styles} urlData={urlData} />}
+ 
+         </Container>
+     );
+ }
+SalesContractPDFView.propTypes = {
+  urlData: PropTypes.any,
+};
